@@ -1,0 +1,2240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Engineer OS — Full Breakdown</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #07070c;
+  --s1: #0f0f18;
+  --s2: #161622;
+  --s3: #1e1e2e;
+  --s4: #26263a;
+  --border: #2c2c44;
+  --border2: #363654;
+  --college: #ff8c42;
+  --college-bg: rgba(255,140,66,0.07);
+  --ai: #3dffd0;
+  --ai-bg: rgba(61,255,208,0.07);
+  --extra: #c084fc;
+  --extra-bg: rgba(192,132,252,0.07);
+  --place: #fde047;
+  --place-bg: rgba(253,224,71,0.07);
+  --text: #e2e2f0;
+  --text2: #a0a0c0;
+  --text3: #606080;
+  --red: #ff5e5e;
+  --green: #4dffb4;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+}
+
+/* Grid bg */
+body::before {
+  content:'';
+  position:fixed; inset:0;
+  background-image:
+    linear-gradient(rgba(61,255,208,0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(61,255,208,0.025) 1px, transparent 1px);
+  background-size: 48px 48px;
+  pointer-events:none; z-index:0;
+}
+
+.wrap { max-width:1440px; margin:0 auto; padding:28px 24px; position:relative; z-index:1; }
+
+/* ── TOP BAR ── */
+.topbar {
+  display:flex; align-items:center; justify-content:space-between;
+  margin-bottom:28px; padding-bottom:20px;
+  border-bottom:1px solid var(--border);
+}
+.logo { font-family:'Syne',sans-serif; font-size:1.7rem; font-weight:800; letter-spacing:-0.04em; }
+.logo em { color:var(--ai); font-style:normal; }
+.logo-sub { font-family:'Space Mono',monospace; font-size:0.6rem; color:var(--text3); letter-spacing:0.12em; margin-top:3px; }
+.topbar-right { display:flex; align-items:center; gap:20px; }
+.clock { font-family:'Space Mono',monospace; font-size:1.6rem; color:var(--ai); font-weight:700; }
+.date { font-family:'Space Mono',monospace; font-size:0.62rem; color:var(--text3); letter-spacing:0.1em; }
+
+/* ── AREA NAV TABS ── */
+.area-tabs {
+  display:flex; gap:8px; margin-bottom:24px; flex-wrap:wrap;
+}
+.tab {
+  font-family:'Space Mono',monospace; font-size:0.68rem; font-weight:700;
+  padding:8px 18px; border-radius:8px; border:1px solid var(--border);
+  background:var(--s1); color:var(--text3); cursor:pointer;
+  letter-spacing:0.05em; transition:all 0.2s;
+}
+.tab:hover { border-color:var(--border2); color:var(--text2); }
+.tab.active { color:var(--bg); font-weight:700; }
+.tab[data-tab="all"] { border-color:var(--border2); color:var(--text2); }
+.tab[data-tab="college"].active { background:var(--college); border-color:var(--college); }
+.tab[data-tab="ai"].active { background:var(--ai); border-color:var(--ai); }
+.tab[data-tab="extra"].active { background:var(--extra); border-color:var(--extra); }
+.tab[data-tab="place"].active { background:var(--place); border-color:var(--place); }
+.tab[data-tab="all"].active { background:var(--s4); border-color:var(--border2); color:var(--text); }
+
+/* ── STAT ROW ── */
+.stat-row {
+  display:grid; grid-template-columns:repeat(4,1fr); gap:14px;
+  margin-bottom:24px;
+}
+.stat-card {
+  background:var(--s1); border:1px solid var(--border);
+  border-radius:14px; padding:16px 18px;
+  position:relative; overflow:hidden;
+  transition: transform 0.2s;
+}
+.stat-card:hover { transform: translateY(-2px); }
+.stat-card::before {
+  content:''; position:absolute; bottom:0; left:0; right:0; height:3px;
+  background:var(--c);
+}
+.stat-card[data-area="college"]{ --c:var(--college); }
+.stat-card[data-area="ai"]{ --c:var(--ai); }
+.stat-card[data-area="extra"]{ --c:var(--extra); }
+.stat-card[data-area="place"]{ --c:var(--place); }
+
+.sc-header { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px; }
+.sc-icon { font-size:1.3rem; }
+.sc-pct { font-family:'Space Mono',monospace; font-size:0.65rem; color:var(--c); font-weight:700; }
+.sc-title { font-family:'Syne',sans-serif; font-weight:700; font-size:0.82rem; color:var(--c); }
+.sc-sub { font-size:0.72rem; color:var(--text3); margin-top:2px; }
+.sc-progress { background:var(--s3); border-radius:3px; height:4px; margin-top:12px; }
+.sc-bar { background:var(--c); border-radius:3px; height:4px; transition:width 0.8s; }
+.sc-counts { font-family:'Space Mono',monospace; font-size:0.58rem; color:var(--text3); margin-top:6px; }
+
+/* ── SOB ALERT ── */
+.sob-alert {
+  background:rgba(255,94,94,0.06); border:1px solid rgba(255,94,94,0.3);
+  border-radius:12px; padding:14px 18px; margin-bottom:22px;
+  display:flex; align-items:center; gap:16px;
+}
+.sob-alert .icon { font-size:1.4rem; flex-shrink:0; }
+.sob-text { flex:1; font-size:0.82rem; color:var(--text); line-height:1.5; }
+.sob-text strong { color:var(--red); }
+.sob-chip {
+  font-family:'Space Mono',monospace; font-size:0.72rem; font-weight:700;
+  color:var(--red); background:rgba(255,94,94,0.1);
+  border:1px solid rgba(255,94,94,0.3); padding:8px 14px; border-radius:8px;
+  white-space:nowrap; flex-shrink:0;
+}
+
+/* ── MAIN AREA SECTIONS ── */
+.area-section {
+  margin-bottom:28px;
+  transition: opacity 0.3s;
+}
+.area-section.hidden { display:none; }
+
+.area-header-row {
+  display:flex; align-items:center; gap:14px; margin-bottom:16px;
+  padding:16px 20px; border-radius:14px;
+  border:1px solid var(--border); background:var(--s1);
+  cursor:pointer; user-select:none;
+}
+.area-section[data-area="college"] .area-header-row { border-left:4px solid var(--college); }
+.area-section[data-area="ai"] .area-header-row { border-left:4px solid var(--ai); }
+.area-section[data-area="extra"] .area-header-row { border-left:4px solid var(--extra); }
+.area-section[data-area="place"] .area-header-row { border-left:4px solid var(--place); }
+
+.area-icon-big { font-size:1.6rem; flex-shrink:0; }
+.area-title-block { flex:1; }
+.area-title-big { font-family:'Syne',sans-serif; font-weight:800; font-size:1.1rem; }
+.area-section[data-area="college"] .area-title-big { color:var(--college); }
+.area-section[data-area="ai"] .area-title-big { color:var(--ai); }
+.area-section[data-area="extra"] .area-title-big { color:var(--extra); }
+.area-section[data-area="place"] .area-title-big { color:var(--place); }
+
+.area-tagline { font-size:0.73rem; color:var(--text3); margin-top:3px; font-style:italic; }
+.area-chevron { font-size:0.9rem; color:var(--text3); transition:transform 0.3s; }
+.area-header-row.collapsed .area-chevron { transform:rotate(-90deg); }
+
+/* ── CATEGORY GROUPS ── */
+.area-body { padding:0; }
+.area-body.collapsed { display:none; }
+
+.cat-group { margin-bottom:16px; }
+.cat-header {
+  display:flex; align-items:center; gap:10px;
+  padding:10px 14px; background:var(--s2); border:1px solid var(--border);
+  border-radius:10px 10px 0 0; cursor:pointer; user-select:none;
+}
+.cat-badge {
+  font-family:'Space Mono',monospace; font-size:0.55rem; font-weight:700;
+  padding:3px 8px; border-radius:4px; letter-spacing:0.06em;
+}
+.cat-title { font-family:'Syne',sans-serif; font-weight:700; font-size:0.88rem; flex:1; }
+.cat-count { font-family:'Space Mono',monospace; font-size:0.6rem; color:var(--text3); }
+.cat-toggle { font-size:0.7rem; color:var(--text3); transition:transform 0.2s; }
+.cat-header.open .cat-toggle { transform:rotate(180deg); }
+
+.task-list { border:1px solid var(--border); border-top:none; border-radius:0 0 10px 10px; overflow:hidden; }
+
+/* ── TASK ITEM ── */
+.task-item {
+  display:grid;
+  grid-template-columns: 20px 1fr auto;
+  gap:12px; align-items:start;
+  padding:12px 16px;
+  border-bottom:1px solid var(--border);
+  background:var(--s1);
+  transition:background 0.15s;
+  cursor:pointer;
+}
+.task-item:last-child { border-bottom:none; }
+.task-item:hover { background:var(--s2); }
+.task-item.done { opacity:0.38; }
+.task-item.done .task-name { text-decoration:line-through; color:var(--text3); }
+.task-item.done .check { background:var(--ac); }
+
+/* subtask */
+.task-item.subtask {
+  grid-template-columns: 44px 1fr auto;
+  background: var(--bg);
+  padding:10px 16px;
+}
+.task-item.subtask:hover { background:var(--s1); }
+
+.check {
+  width:18px; height:18px; border-radius:5px;
+  border:1.5px solid var(--ac, var(--border2));
+  display:flex; align-items:center; justify-content:center;
+  flex-shrink:0; margin-top:2px; font-size:0.65rem;
+  color:var(--bg); transition:all 0.15s;
+}
+.check.sm { width:14px; height:14px; border-radius:4px; }
+.done .check { background:var(--ac); border-color:var(--ac); }
+
+.task-content { min-width:0; }
+.task-name { font-size:0.84rem; font-weight:500; line-height:1.4; color:var(--text); }
+.task-name.sm { font-size:0.78rem; font-weight:400; color:var(--text2); }
+.task-desc { font-size:0.72rem; color:var(--text3); line-height:1.45; margin-top:4px; }
+.task-tags { display:flex; gap:5px; flex-wrap:wrap; margin-top:6px; }
+.tag {
+  font-family:'Space Mono',monospace; font-size:0.55rem; letter-spacing:0.04em;
+  padding:2px 7px; border-radius:4px; border:1px solid; white-space:nowrap;
+}
+.tag-r { background:rgba(255,94,94,0.1); border-color:rgba(255,94,94,0.3); color:var(--red); }
+.tag-y { background:rgba(253,224,71,0.08); border-color:rgba(253,224,71,0.25); color:var(--place); }
+.tag-g { background:rgba(77,255,180,0.08); border-color:rgba(77,255,180,0.25); color:var(--green); }
+.tag-d { background:rgba(160,160,192,0.06); border-color:var(--border); color:var(--text3); }
+.tag-p { background:rgba(192,132,252,0.08); border-color:rgba(192,132,252,0.25); color:var(--extra); }
+.tag-b { background:rgba(61,255,208,0.07); border-color:rgba(61,255,208,0.25); color:var(--ai); }
+
+.task-right { display:flex; flex-direction:column; align-items:flex-end; gap:5px; flex-shrink:0; }
+.effort {
+  font-family:'Space Mono',monospace; font-size:0.55rem; color:var(--text3);
+  background:var(--s3); padding:2px 7px; border-radius:4px; white-space:nowrap;
+}
+.expand-btn {
+  font-family:'Space Mono',monospace; font-size:0.52rem; color:var(--text3);
+  background:var(--s3); border:1px solid var(--border); padding:2px 7px;
+  border-radius:4px; cursor:pointer; white-space:nowrap;
+  transition:all 0.15s;
+}
+.expand-btn:hover { color:var(--text2); border-color:var(--border2); }
+.expand-btn.open { color:var(--ac); border-color:var(--ac); background:rgba(61,255,208,0.05); }
+
+.subtasks-container { display:none; border-top:1px solid var(--border); }
+.subtasks-container.open { display:block; }
+
+/* resource link inside tasks */
+.resource-link {
+  display:inline-flex; align-items:center; gap:4px;
+  font-size:0.68rem; color:var(--ai); text-decoration:none;
+  background:rgba(61,255,208,0.07); border:1px solid rgba(61,255,208,0.2);
+  padding:3px 8px; border-radius:5px; margin-top:5px; margin-right:4px;
+  transition: opacity 0.2s;
+}
+.resource-link:hover { opacity:0.75; }
+
+/* ── WEEK TIMELINE ── */
+.week-strip {
+  margin-bottom:24px; background:var(--s1); border:1px solid var(--border);
+  border-radius:14px; padding:20px; overflow:hidden;
+}
+.ws-title { font-family:'Syne',sans-serif; font-size:0.95rem; font-weight:700; margin-bottom:16px; display:flex; align-items:center; gap:8px; }
+.ws-title::before { content:''; width:4px; height:16px; background:var(--ai); border-radius:2px; }
+
+.week-cols { display:grid; grid-template-columns:80px repeat(7,1fr); gap:6px; }
+.wc-head { font-family:'Space Mono',monospace; font-size:0.58rem; color:var(--text3); text-align:center; padding:4px; letter-spacing:0.05em; }
+.wc-head.today { color:var(--ai); }
+.wc-time { font-family:'Space Mono',monospace; font-size:0.6rem; color:var(--text3); padding:6px 0; display:flex; align-items:center; }
+.wc-block {
+  border-radius:6px; padding:6px 7px;
+  font-size:0.65rem; line-height:1.35;
+  margin-bottom:4px;
+}
+.wc-block.college { background:rgba(255,140,66,0.12); color:var(--college); border-left:2px solid var(--college); }
+.wc-block.ai { background:rgba(61,255,208,0.1); color:var(--ai); border-left:2px solid var(--ai); }
+.wc-block.extra { background:rgba(192,132,252,0.1); color:var(--extra); border-left:2px solid var(--extra); }
+.wc-block.place { background:rgba(253,224,71,0.1); color:var(--place); border-left:2px solid var(--place); }
+.wc-block.rest { background:rgba(255,255,255,0.03); color:var(--text3); border-left:2px solid var(--border); }
+
+/* ── POMODORO ── */
+.pom-bar {
+  display:flex; gap:16px; align-items:center;
+  background:var(--s1); border:1px solid var(--border); border-radius:14px;
+  padding:20px 24px; margin-bottom:24px;
+}
+.pom-timer { text-align:center; min-width:120px; }
+.pom-time {
+  font-family:'Syne',sans-serif; font-size:2.8rem; font-weight:800;
+  color:var(--ai); line-height:1; letter-spacing:-0.02em;
+}
+.pom-time.brk { color:var(--extra); }
+.pom-time.pau { color:var(--text3); }
+.pom-phase { font-family:'Space Mono',monospace; font-size:0.58rem; color:var(--text3); margin-top:4px; letter-spacing:0.08em; }
+.pom-btns { display:flex; gap:6px; margin-top:10px; justify-content:center; }
+.btn {
+  font-family:'Space Mono',monospace; font-size:0.65rem; font-weight:700;
+  padding:7px 13px; border-radius:7px; border:1px solid var(--border);
+  background:var(--s2); color:var(--text2); cursor:pointer; letter-spacing:0.04em;
+  transition:all 0.15s;
+}
+.btn:hover { background:var(--s3); color:var(--text); }
+.btn.go { background:var(--ai); color:var(--bg); border-color:var(--ai); }
+.btn.go:hover { opacity:0.85; }
+.btn.stop { color:var(--red); border-color:rgba(255,94,94,0.3); }
+.btn.stop:hover { background:rgba(255,94,94,0.08); }
+.pom-dots { display:flex; gap:5px; justify-content:center; margin-top:8px; }
+.pd { width:9px; height:9px; border-radius:50%; border:1.5px solid var(--ai); transition:background 0.3s; }
+.pd.f { background:var(--ai); }
+
+.pom-info { flex:1; }
+.pom-info h3 { font-family:'Syne',sans-serif; font-size:0.95rem; font-weight:700; margin-bottom:6px; }
+.pom-info p { font-size:0.78rem; color:var(--text3); line-height:1.55; }
+.pom-info p strong { color:var(--ai); }
+.pom-sessions { font-family:'Space Mono',monospace; font-size:0.62rem; color:var(--text3); margin-top:8px; }
+.pom-sessions span { color:var(--ai); font-weight:700; }
+
+.pom-task { flex:1; }
+.pom-task label { font-family:'Space Mono',monospace; font-size:0.58rem; color:var(--text3); display:block; margin-bottom:5px; letter-spacing:0.08em; }
+.pom-select {
+  width:100%; background:var(--s2); border:1px solid var(--border);
+  border-radius:8px; padding:9px 12px; color:var(--text); font-family:'DM Sans',sans-serif;
+  font-size:0.8rem; outline:none; cursor:pointer; transition:border-color 0.2s;
+}
+.pom-select:focus { border-color:var(--ai); }
+
+/* ── QUICK TRACKER ── */
+.tracker-row {
+  display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:24px;
+}
+.tracker-card {
+  background:var(--s1); border:1px solid var(--border); border-radius:12px; padding:16px;
+}
+.tc-label { font-family:'Space Mono',monospace; font-size:0.58rem; color:var(--text3); letter-spacing:0.08em; margin-bottom:8px; }
+.tc-num {
+  font-family:'Syne',sans-serif; font-size:2rem; font-weight:800;
+  line-height:1; color:var(--text);
+}
+.tc-denom { font-size:0.75rem; color:var(--text3); }
+.tc-bar-wrap { background:var(--s3); border-radius:3px; height:3px; margin-top:10px; }
+.tc-bar { border-radius:3px; height:3px; transition:width 0.5s; }
+.tc-buttons { display:flex; gap:5px; margin-top:10px; }
+.tc-btn {
+  font-family:'Space Mono',monospace; font-size:0.58rem;
+  padding:5px 9px; border-radius:5px; border:1px solid var(--border);
+  background:var(--s2); color:var(--text2); cursor:pointer; transition:all 0.15s;
+}
+.tc-btn:hover { background:var(--s3); color:var(--text); }
+.tc-btn.inc { color:var(--green); border-color:rgba(77,255,180,0.3); }
+.tc-btn.dec { color:var(--red); border-color:rgba(255,94,94,0.3); }
+
+/* ── AREA color helpers ── */
+.area-section[data-area="college"] { --ac:var(--college); }
+.area-section[data-area="ai"] { --ac:var(--ai); }
+.area-section[data-area="extra"] { --ac:var(--extra); }
+.area-section[data-area="place"] { --ac:var(--place); }
+
+/* ── MILESTONE STRIP ── */
+.milestone-strip {
+  background:var(--s1); border:1px solid var(--border); border-radius:14px;
+  padding:18px 20px; margin-bottom:24px;
+}
+.ms-title { font-family:'Syne',sans-serif; font-size:0.9rem; font-weight:700; margin-bottom:14px; display:flex; align-items:center; gap:8px; }
+.ms-title::before { content:''; width:4px; height:14px; background:var(--place); border-radius:2px; }
+.milestones { display:flex; gap:0; position:relative; }
+.milestones::before {
+  content:''; position:absolute; top:14px; left:20px; right:20px; height:2px;
+  background:var(--border); z-index:0;
+}
+.ms-item { display:flex; flex-direction:column; align-items:center; flex:1; z-index:1; }
+.ms-dot {
+  width:28px; height:28px; border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  font-size:0.75rem; font-weight:700; font-family:'Space Mono',monospace;
+  border:2px solid var(--border); background:var(--s1); color:var(--text3);
+  transition:all 0.3s; cursor:pointer;
+}
+.ms-dot.done { background:var(--green); border-color:var(--green); color:var(--bg); }
+.ms-dot.active { background:var(--ai); border-color:var(--ai); color:var(--bg); animation: glow 2s ease-in-out infinite; }
+.ms-dot.upcoming { border-color:var(--border2); }
+@keyframes glow { 0%,100%{box-shadow:0 0 0 0 rgba(61,255,208,0.4);} 50%{box-shadow:0 0 0 8px rgba(61,255,208,0);} }
+.ms-label { font-size:0.62rem; color:var(--text3); margin-top:7px; text-align:center; max-width:80px; line-height:1.3; }
+.ms-date { font-family:'Space Mono',monospace; font-size:0.55rem; color:var(--text3); margin-top:3px; }
+
+/* Daily notes */
+.notes-area {
+  background:var(--s1); border:1px solid var(--border); border-radius:14px;
+  padding:18px; margin-bottom:24px;
+}
+.notes-header { font-family:'Syne',sans-serif; font-size:0.9rem; font-weight:700; margin-bottom:10px; display:flex; align-items:center; gap:8px; }
+.notes-header::before { content:''; width:4px; height:14px; background:var(--college); border-radius:2px; }
+.notes-input {
+  width:100%; background:var(--s2); border:1px solid var(--border); border-radius:8px;
+  padding:12px; color:var(--text); font-family:'DM Sans',sans-serif; font-size:0.82rem;
+  line-height:1.6; resize:vertical; min-height:80px; outline:none; transition:border-color 0.2s;
+}
+.notes-input:focus { border-color:var(--college); }
+.notes-input::placeholder { color:var(--text3); }
+
+/* Live dot */
+.ldot {
+  display:inline-block; width:6px; height:6px; border-radius:50%;
+  background:var(--red); margin-right:5px;
+  animation: ldotpulse 1.5s ease-in-out infinite;
+}
+@keyframes ldotpulse { 0%,100%{opacity:1;} 50%{opacity:0.3;} }
+
+/* Responsive */
+@media(max-width:1100px) {
+  .stat-row, .tracker-row { grid-template-columns:repeat(2,1fr); }
+  .week-cols { grid-template-columns:60px repeat(7,1fr); gap:4px; }
+}
+@media(max-width:700px) {
+  .stat-row, .tracker-row { grid-template-columns:1fr 1fr; }
+  .pom-bar { flex-direction:column; }
+  .week-strip { display:none; }
+}
+
+/* scrollbar */
+::-webkit-scrollbar { width:4px; height:4px; }
+::-webkit-scrollbar-track { background:var(--s1); }
+::-webkit-scrollbar-thumb { background:var(--border); border-radius:2px; }
+
+/* toast */
+.toast {
+  position:fixed; bottom:24px; right:24px; z-index:9999;
+  background:var(--s3); border:1px solid var(--border2); border-radius:10px;
+  padding:12px 18px; font-size:0.8rem; color:var(--text); opacity:0;
+  transform:translateY(10px); transition:all 0.3s; pointer-events:none;
+}
+.toast.show { opacity:1; transform:translateY(0); }
+
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <div>
+    <div class="logo">Engineer <em>OS</em></div>
+    <div class="logo-sub"><span class="ldot"></span>FINAL SEMESTER · FULL TASK BREAKDOWN · POWERED BY FOCUS</div>
+  </div>
+  <div class="topbar-right">
+    <div>
+      <div class="clock" id="clock">--:--:--</div>
+      <div class="date" id="dateD">--</div>
+    </div>
+  </div>
+</div>
+
+<!-- STAT CARDS -->
+<div class="stat-row">
+  <div class="stat-card" data-area="college">
+    <div class="sc-header">
+      <div class="sc-icon">🎓</div>
+      <div class="sc-pct" id="pct-college">0%</div>
+    </div>
+    <div class="sc-title">AREA 1 — College</div>
+    <div class="sc-sub">Major proj · Midsem · Recommender</div>
+    <div class="sc-progress"><div class="sc-bar" id="bar-college" style="width:0%;background:var(--college)"></div></div>
+    <div class="sc-counts" id="cnt-college">0 / 0 tasks done</div>
+  </div>
+  <div class="stat-card" data-area="ai">
+    <div class="sc-header">
+      <div class="sc-icon">🤖</div>
+      <div class="sc-pct" id="pct-ai">0%</div>
+    </div>
+    <div class="sc-title">AREA 2 — AI Growth</div>
+    <div class="sc-sub">Engines · Agents · DL · Blogs</div>
+    <div class="sc-progress"><div class="sc-bar" id="bar-ai" style="width:0%;background:var(--ai)"></div></div>
+    <div class="sc-counts" id="cnt-ai">0 / 0 tasks done</div>
+  </div>
+  <div class="stat-card" data-area="extra">
+    <div class="sc-header">
+      <div class="sc-icon">⚙️</div>
+      <div class="sc-pct" id="pct-extra">0%</div>
+    </div>
+    <div class="sc-title">AREA 3 — Additional</div>
+    <div class="sc-sub">SOB · Java · Go · Python · OpenClaw</div>
+    <div class="sc-progress"><div class="sc-bar" id="bar-extra" style="width:0%;background:var(--extra)"></div></div>
+    <div class="sc-counts" id="cnt-extra">0 / 0 tasks done</div>
+  </div>
+  <div class="stat-card" data-area="place">
+    <div class="sc-header">
+      <div class="sc-icon">💼</div>
+      <div class="sc-pct" id="pct-place">0%</div>
+    </div>
+    <div class="sc-title">AREA 4 — Placements</div>
+    <div class="sc-sub">LC · Fundamentals · Resume · CF</div>
+    <div class="sc-progress"><div class="sc-bar" id="bar-place" style="width:0%;background:var(--place)"></div></div>
+    <div class="sc-counts" id="cnt-place">0 / 0 tasks done</div>
+  </div>
+</div>
+
+<!-- SOB ALERT -->
+<div class="sob-alert">
+  <div class="icon">🔥</div>
+  <div class="sob-text">
+    <strong>SUMMER OF BITCOIN — ROUND 1 CLOSES MARCH 15.</strong> This is a once-a-year open-source Bitcoin fellowship with a stipend. 
+    You must start exploring the codebase and making contributions <strong>this week</strong>. Don't let this window close.
+  </div>
+  <div class="sob-chip" id="sobChip">LOADING...</div>
+</div>
+
+<!-- MILESTONE STRIP -->
+<div class="milestone-strip">
+  <div class="ms-title">Semester Milestones — Click to mark done</div>
+  <div class="milestones">
+    <div class="ms-item">
+      <div class="ms-dot done" onclick="toggleMS(this)">✓</div>
+      <div class="ms-label">SOB Environment Setup</div>
+      <div class="ms-date">Week 1</div>
+    </div>
+    <div class="ms-item">
+      <div class="ms-dot active" onclick="toggleMS(this)">→</div>
+      <div class="ms-label">SOB PR #1 Submitted</div>
+      <div class="ms-date">Mar 10</div>
+    </div>
+    <div class="ms-item">
+      <div class="ms-dot upcoming" onclick="toggleMS(this)">3</div>
+      <div class="ms-label">Client Engine #1 MVP</div>
+      <div class="ms-date">Mar 20</div>
+    </div>
+    <div class="ms-item">
+      <div class="ms-dot upcoming" onclick="toggleMS(this)">4</div>
+      <div class="ms-label">Midsem Exams Done</div>
+      <div class="ms-date">Mar end</div>
+    </div>
+    <div class="ms-item">
+      <div class="ms-dot upcoming" onclick="toggleMS(this)">5</div>
+      <div class="ms-label">Major Project v1</div>
+      <div class="ms-date">Apr 15</div>
+    </div>
+    <div class="ms-item">
+      <div class="ms-dot upcoming" onclick="toggleMS(this)">6</div>
+      <div class="ms-label">Resume Finalized</div>
+      <div class="ms-date">Apr 20</div>
+    </div>
+    <div class="ms-item">
+      <div class="ms-dot upcoming" onclick="toggleMS(this)">7</div>
+      <div class="ms-label">LeetCode 200 solved</div>
+      <div class="ms-date">Apr 30</div>
+    </div>
+    <div class="ms-item">
+      <div class="ms-dot upcoming" onclick="toggleMS(this)">8</div>
+      <div class="ms-label">Graduation + Offer</div>
+      <div class="ms-date">May</div>
+    </div>
+  </div>
+</div>
+
+<!-- POMODORO + TASK SELECT -->
+<div class="pom-bar">
+  <div class="pom-timer">
+    <div class="pom-time" id="pomTime">25:00</div>
+    <div class="pom-phase" id="pomPhase">READY TO FOCUS</div>
+    <div class="pom-btns">
+      <button class="btn go" onclick="pomStart()">START</button>
+      <button class="btn" onclick="pomPause()">PAUSE</button>
+      <button class="btn stop" onclick="pomReset()">RESET</button>
+    </div>
+    <div class="pom-dots">
+      <div class="pd" id="pd0"></div><div class="pd" id="pd1"></div>
+      <div class="pd" id="pd2"></div><div class="pd" id="pd3"></div>
+    </div>
+  </div>
+  <div class="pom-info">
+    <h3>🧠 How to enter flow state — right now</h3>
+    <p>
+      Flow doesn't require motivation. It requires <strong>a single point of contact</strong>. 
+      Pick one task below, start the timer, put your phone in another room, and open only that task.
+      The first 90 seconds are the hardest. After that, your brain takes over. <strong>Start. Not soon. Now.</strong>
+      Every session you complete here adds to your streak — and streaks compound into identity.
+    </p>
+    <div class="pom-sessions">TODAY: <span id="todaySessions">0</span> sessions done &nbsp;·&nbsp; TOTAL FOCUS: <span id="totalFocus">0h 0m</span></div>
+  </div>
+  <div class="pom-task">
+    <label>CURRENTLY WORKING ON</label>
+    <select class="pom-select" id="focusTask">
+      <option value="">— pick a task to focus on —</option>
+      <optgroup label="🎓 College">
+        <option>Major Project: Define scope & architecture</option>
+        <option>Major Project: Assign modules to team</option>
+        <option>Midsem: Subject-wise revision plan</option>
+        <option>Midsem: Solve past papers</option>
+        <option>Recommender: Algorithm research</option>
+        <option>Recommender: Build slides</option>
+      </optgroup>
+      <optgroup label="🤖 AI Growth">
+        <option>Client Engine #1: Requirements doc</option>
+        <option>Client Engine #1: Build RAG pipeline</option>
+        <option>Client Engine #2: Architecture design</option>
+        <option>Personal Agent #1: Build</option>
+        <option>Deep Learning: LSTM theory</option>
+        <option>Deep Learning: LSTM code project</option>
+        <option>Write Medium blog post</option>
+      </optgroup>
+      <optgroup label="⚙️ Additional">
+        <option>SOB: Explore codebase & find issue</option>
+        <option>SOB: Write first contribution</option>
+        <option>Java: OOP concepts practice</option>
+        <option>Java: Collections deep dive</option>
+        <option>Go: REST API project</option>
+        <option>OpenClaw: Config setup</option>
+      </optgroup>
+      <optgroup label="💼 Placements">
+        <option>LeetCode: Arrays & Strings (2 easy)</option>
+        <option>LeetCode: Trees & Graphs (2 medium)</option>
+        <option>LeetCode: Dynamic Programming (1 hard)</option>
+        <option>Core: OS fundamentals</option>
+        <option>Core: DBMS & SQL</option>
+        <option>Core: Computer Networks</option>
+        <option>Resume: Draft & polish</option>
+        <option>Codeforces: Rated contest</option>
+      </optgroup>
+    </select>
+  </div>
+</div>
+
+<!-- QUICK TRACKERS -->
+<div class="tracker-row">
+  <div class="tracker-card">
+    <div class="tc-label">LEETCODE THIS WEEK</div>
+    <div><span class="tc-num" id="lc-n">0</span><span class="tc-denom"> / 42 problems</span></div>
+    <div class="tc-bar-wrap"><div class="tc-bar" id="lc-b" style="width:0%;background:var(--place)"></div></div>
+    <div class="tc-buttons">
+      <button class="tc-btn inc" onclick="tc('lc',1)">+1 solved</button>
+      <button class="tc-btn" onclick="tc('lc',5)">+5</button>
+      <button class="tc-btn dec" onclick="tc('lc',-1)">-1</button>
+    </div>
+  </div>
+  <div class="tracker-card">
+    <div class="tc-label">SOB CONTRIBUTIONS</div>
+    <div><span class="tc-num" id="sob-n">0</span><span class="tc-denom"> / 5 PRs</span></div>
+    <div class="tc-bar-wrap"><div class="tc-bar" id="sob-b" style="width:0%;background:var(--red)"></div></div>
+    <div class="tc-buttons">
+      <button class="tc-btn inc" onclick="tc('sob',1)">+1 PR</button>
+      <button class="tc-btn dec" onclick="tc('sob',-1)">-1</button>
+    </div>
+  </div>
+  <div class="tracker-card">
+    <div class="tc-label">DEEP WORK HRS TODAY</div>
+    <div><span class="tc-num" id="dw-n">0</span><span class="tc-denom"> / 8 hrs</span></div>
+    <div class="tc-bar-wrap"><div class="tc-bar" id="dw-b" style="width:0%;background:var(--ai)"></div></div>
+    <div class="tc-buttons">
+      <button class="tc-btn inc" onclick="tc('dw',1)">+1 hr</button>
+      <button class="tc-btn inc" onclick="tc('dw',0.5)">+30m</button>
+      <button class="tc-btn dec" onclick="tc('dw',-1)">-1</button>
+    </div>
+  </div>
+  <div class="tracker-card">
+    <div class="tc-label">CODEFORCES RATING</div>
+    <div><span class="tc-num" id="cf-n">800</span></div>
+    <div class="tc-bar-wrap"><div class="tc-bar" id="cf-b" style="width:20%;background:var(--extra)"></div></div>
+    <div class="tc-buttons">
+      <button class="tc-btn inc" onclick="tc('cf',25)">+25</button>
+      <button class="tc-btn inc" onclick="tc('cf',50)">+50</button>
+      <button class="tc-btn dec" onclick="tc('cf',-25)">-25</button>
+    </div>
+  </div>
+</div>
+
+<!-- AREA TABS -->
+<div class="area-tabs">
+  <div class="tab active" data-tab="all" onclick="filterArea('all')">ALL AREAS</div>
+  <div class="tab" data-tab="college" onclick="filterArea('college')">🎓 COLLEGE</div>
+  <div class="tab" data-tab="ai" onclick="filterArea('ai')">🤖 AI GROWTH</div>
+  <div class="tab" data-tab="extra" onclick="filterArea('extra')">⚙️ ADDITIONAL</div>
+  <div class="tab" data-tab="place" onclick="filterArea('place')">💼 PLACEMENTS</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     AREA 1: COLLEGE
+═══════════════════════════════════════════════ -->
+<div class="area-section" data-area="college" id="sec-college">
+  <div class="area-header-row" onclick="toggleSection('college')">
+    <div class="area-icon-big">🎓</div>
+    <div class="area-title-block">
+      <div class="area-title-big">AREA 1 — College</div>
+      <div class="area-tagline">Last semester. Ship the project, ace the exams, present the idea. Leave a legacy.</div>
+    </div>
+    <div class="area-chevron">▾</div>
+  </div>
+  <div class="area-body" id="body-college">
+
+    <!-- 1.1 Major Project -->
+    <div class="cat-group">
+      <div class="cat-header open" onclick="toggleCat(this)">
+        <span class="cat-badge" style="background:rgba(255,140,66,0.15);color:var(--college);border:1px solid rgba(255,140,66,0.3)">PROJECT</span>
+        <span class="cat-title">Major Project — Build & Ship</span>
+        <span class="cat-count" id="cc-mp">0/8</span>
+        <span class="cat-toggle">▾</span>
+      </div>
+      <div class="task-list">
+
+        <div class="task-item" style="--ac:var(--college)" onclick="toggle(this)">
+          <div class="check">✓</div>
+          <div class="task-content">
+            <div class="task-name">Define project scope and problem statement clearly</div>
+            <div class="task-desc">Write a 1-page document: What problem are you solving? Who is the user? What is the MVP? What tech stack will you use? This document drives all future decisions.</div>
+            <div class="task-tags">
+              <span class="tag tag-r">DO TODAY</span>
+              <span class="tag tag-d">~2 hrs</span>
+            </div>
+          </div>
+          <div class="task-right"><span class="effort">HIGH PRIORITY</span></div>
+        </div>
+
+        <div class="task-item" style="--ac:var(--college)" onclick="toggle(this)">
+          <div class="check">✓</div>
+          <div class="task-content">
+            <div class="task-name">Design system architecture and data flow diagram</div>
+            <div class="task-desc">Draw the full system: frontend → backend → DB → ML model → APIs. Use draw.io or Excalidraw. This prevents scope creep and makes it easy to split work with teammates.</div>
+            <div class="task-tags"><span class="tag tag-y">WEEK 1</span><span class="tag tag-d">~3 hrs</span></div>
+          </div>
+          <div class="task-right"><span class="effort">ARCHITECTURE</span></div>
+        </div>
+
+        <div class="task-item" style="--ac:var(--college)" onclick="toggle(this)">
+          <div class="check">✓</div>
+          <div class="task-content">
+            <div class="task-name">Divide modules among team members with clear ownership</div>
+            <div class="task-desc">Create a table: Module name | Owner | Deadline | Dependencies. Everyone must own at least one end-to-end feature. Use GitHub projects or Notion to track.</div>
+            <div class="task-tags"><span class="tag tag-y">WEEK 1</span><span class="tag tag-d">GROUP</span></div>
+          </div>
+          <div class="task-right"><span class="effort">TEAM LEAD</span></div>
+        </div>
+
+        <div class="task-item" style="--ac:var(--college)" onclick="toggle(this)">
+          <div class="check">✓</div>
+          <div class="task-content">
+            <div class="task-name">Set up GitHub repo, folder structure, and README</div>
+            <div class="task-desc">Monorepo or separate repos for frontend/backend. Add .gitignore, README with setup instructions, branch naming convention (feat/fix/chore). This is how industry works — do it right.</div>
+            <div class="task-tags"><span class="tag tag-y">WEEK 1</span><span class="tag tag-d">~1 hr</span></div>
+          </div>
+          <div class="task-right"><span class="effort">SETUP</span></div>
+        </div>
+
+        <div class="task-item" style="--ac:var(--college)" onclick="toggle(this)">
+          <div class="check">✓</div>
+          <div class="task-content">
+            <div class="task-name">Build MVP — core functionality only, no polish yet</div>
+            <div class="task-desc">The rule of MVP: if you can cut it, cut it. Build the one central feature end-to-end first. Deploy it to a free host (Vercel/Render/Railway) so the team can see progress daily.</div>
+            <div class="task-tags"><span class="tag tag-d">WEEK 2-4</span></div>
+          </div>
+          <div class="task-right"><span class="effort">CORE BUILD</span></div>
+        </div>
+
+        <div class="task-item" style="--ac:var(--college)" onclick="toggle(this)">
+          <div class="check">✓</div>
+          <div class="task-content">
+            <div class="task-name">Weekly sync with team — 30 min standup every Monday</div>
+            <div class="task-desc">Format: What did I do? What will I do? What is blocking me? Keep it under 30 min. If someone is stuck for more than 2 days, the team unblocks together.</div>
+            <div class="task-tags"><span class="tag tag-d">RECURRING</span></div>
+          </div>
+          <div class="task-right"><span class="effort">PROCESS</span></div>
+        </div>
+
+        <div class="task-item" style="--ac:var(--college)" onclick="toggle(this)">
+          <div class="check">✓</div>
+          <div class="task-content">
+            <div class="task-name">Write project report chapter-by-chapter alongside development</div>
+            <div class="task-desc">Do NOT leave the report for the last week. Write Introduction and Literature Review now. Write System Design after you finalize architecture. Write Results after each milestone. 30 min/day is enough.</div>
+            <div class="task-tags"><span class="tag tag-d">ONGOING</span></div>
+          </div>
+          <div class="task-right"><span class="effort">DOCUMENTATION</span></div>
+        </div>
+
+        <div class="task-item" style="--ac:var(--college)" onclick="toggle(this)">
+          <div class="check">✓</div>
+          <div class="task-content">
+            <div class="task-name">Prepare final demo — record video + live presentation</div>
+            <div class="task-desc">Record a 2-min demo video as backup. Practice live demo 3 times. Prepare 10 likely Q&A questions. The project is only as good as how you can explain it.</div>
+            <div class="task-tags"><span class="tag tag-d">FINAL WEEK</span></div>
+          </div>
+          <div class="task-right"><span class="effort">PRESENTATION</span></div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- 1.2 Midsem -->
+    <div class="cat-group">
+      <div class="cat-header open" onclick="toggleCat(this)">
+        <span class="cat-badge" style="background:rgba(255,140,66,0.15);color:var(--college);border:1px solid rgba(255,140,66,0.3)">EXAMS</span>
+        <span class="cat-title">Midsem Exam Preparation</span>
+        <span class="cat-count" id="cc-mid">0/6</span>
+        <span class="cat-toggle">▾</span>
+      </div>
+      <div class="task-list">
+        <div class="task-item" style="--ac:var(--college)" onclick="toggle(this)">
+          <div class="check">✓</div>
+          <div class="task-content">
+            <div class="task-name">List all subjects, syllabus weightage, and exam dates</div>
+            <div class="task-desc">Make a simple table: Subject | Exam Date | Units | High-weight topics | Done/Pending. This is your map — you can't navigate without it.</div>
+            <div class="task-tags"><span class="tag tag-r">DO TODAY</span><span class="tag tag-d">30 min</span></div>
+          </div>
+          <div class="task-right"><span class="effort">PLANNING</span></div>
+        </div>
+        <div class="task-item" style="--ac:var(--college)" onclick="toggle(this)">
+          <div class="check">✓</div>
+          <div class="task-content">
+            <div class="task-name">Collect previous year papers for all subjects (last 3 years)</div>
+            <div class="task-desc">Past papers are the highest-leverage prep material. They show exactly what gets asked. Find via college portal, seniors, or Google. Solve them timed under exam conditions.</div>
+            <div class="task-tags"><span class="tag tag-y">THIS WEEK</span></div>
+          </div>
+          <div class="task-right"><span class="effort">RESOURCES</span></div>
+        </div>
+        <div class="task-item" style="--ac:var(--college)" onclick="toggle(this)">
+          <div class="check">✓</div>
+          <div class="task-content">
+            <div class="task-name">Create 1-page cheatsheets for each subject</div>
+            <div class="task-desc">Making the cheatsheet IS the revision. Don't just read — condense every important formula, concept, and diagram onto a single A4. Review it daily in the 5 min before bed.</div>
+            <div class="task-tags"><span class="tag tag-d">1/SUBJECT</span></div>
+          </div>
+          <div class="task-right"><span class="effort">ACTIVE RECALL</span></div>
+        </div>
+        <div class="task-item" style="--ac:var(--college)" onclick="toggle(this)">
+          <div class="check">✓</div>
+          <div class="task-content">
+            <div class="task-name">Solve 2 past papers per subject under timed conditions</div>
+            <div class="task-desc">Set a timer, no notes, no phone. After finishing, check answers and note every mistake. Don't re-read what you got right — only study what you got wrong. This is the method that works.</div>
+            <div class="task-tags"><span class="tag tag-d">1 WEEK BEFORE</span></div>
+          </div>
+          <div class="task-right"><span class="effort">PRACTICE</span></div>
+        </div>
+        <div class="task-item" style="--ac:var(--college)" onclick="toggle(this)">
+          <div class="check">✓</div>
+          <div class="task-content">
+            <div class="task-name">Group study session — teach concepts to teammates</div>
+            <div class="task-desc">Teaching is the most powerful revision technique. Arrange 1-2 group sessions per subject. Whoever explains a concept best understands it best. Rotate who explains what.</div>
+            <div class="task-tags"><span class="tag tag-d">2 DAYS BEFORE</span></div>
+          </div>
+          <div class="task-right"><span class="effort">SOCIAL LEARNING</span></div>
+        </div>
+        <div class="task-item" style="--ac:var(--college)" onclick="toggle(this)">
+          <div class="check">✓</div>
+          <div class="task-content">
+            <div class="task-name">Night before exam: cheatsheet only, sleep by 10:30 PM</div>
+            <div class="task-desc">Cramming the night before actively harms performance — sleep consolidates memory 4x better than late-night reading. One final pass through your cheatsheet, then sleep. That's it.</div>
+            <div class="task-tags"><span class="tag tag-d">EXAM EVE</span></div>
+          </div>
+          <div class="task-right"><span class="effort">SLEEP = STUDY</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 1.3 Recommender -->
+    <div class="cat-group">
+      <div class="cat-header open" onclick="toggleCat(this)">
+        <span class="cat-badge" style="background:rgba(255,140,66,0.15);color:var(--college);border:1px solid rgba(255,140,66,0.3)">GROUP</span>
+        <span class="cat-title">Recommender System — Group Activity & Idea Presentation</span>
+        <span class="cat-count" id="cc-rec">0/5</span>
+        <span class="cat-toggle">▾</span>
+      </div>
+      <div class="task-list">
+        <div class="task-item" style="--ac:var(--college)" onclick="toggle(this)">
+          <div class="check">✓</div>
+          <div class="task-content">
+            <div class="task-name">Understand the 3 core recommender approaches deeply</div>
+            <div class="task-desc">
+              <strong style="color:var(--text)">Collaborative Filtering</strong>: "Users like you liked X" — uses user-item interaction matrices. 
+              <strong style="color:var(--text)">Content-Based</strong>: "You liked X, here's similar content" — uses item features. 
+              <strong style="color:var(--text)">Hybrid</strong>: Combines both for best accuracy (Netflix, Spotify use this).
+              Spend 2 hrs understanding each with examples before the group meets.
+            </div>
+            <div class="task-tags"><span class="tag tag-r">FIRST</span><span class="tag tag-d">2 hrs</span></div>
+          </div>
+          <div class="task-right"><span class="effort">THEORY</span></div>
+        </div>
+        <div class="task-item" style="--ac:var(--college)" onclick="toggle(this)">
+          <div class="check">✓</div>
+          <div class="task-content">
+            <div class="task-name">Pick a unique, interesting use case for your idea (not just movies)</div>
+            <div class="task-desc">Stand out by picking an uncommon domain: Career path recommender, Open-source project recommender, Study material recommender, Campus event recommender, Research paper recommender. Unique = memorable presentation.</div>
+            <div class="task-tags"><span class="tag tag-y">GROUP DECISION</span></div>
+          </div>
+          <div class="task-right"><span class="effort">IDEATION</span></div>
+        </div>
+        <div class="task-item" style="--ac:var(--college)" onclick="toggle(this)">
+          <div class="check">✓</div>
+          <div class="task-content">
+            <div class="task-name">Prototype the system — even a simple Python + Pandas version</div>
+            <div class="task-desc">Use MovieLens or a real dataset. Build the simplest version: user-item matrix → cosine similarity → top-N recommendations. 50 lines of Python. Having a working demo beats slides every time.</div>
+            <div class="task-tags"><span class="tag tag-d">CODE IT</span><span class="tag tag-b">Python</span></div>
+          </div>
+          <div class="task-right"><span class="effort">BUILD</span></div>
+        </div>
+        <div class="task-item" style="--ac:var(--college)" onclick="toggle(this)">
+          <div class="check">✓</div>
+          <div class="task-content">
+            <div class="task-name">Build the presentation — 8 slides max, clean design</div>
+            <div class="task-desc">Slide 1: Problem. Slide 2-3: How recommenders work (visuals). Slide 4: Your system design. Slide 5: Demo (live or gif). Slide 6: Results/metrics. Slide 7: Challenges + future work. Slide 8: Q&A. Less is more.</div>
+            <div class="task-tags"><span class="tag tag-d">SLIDES</span></div>
+          </div>
+          <div class="task-right"><span class="effort">PRESENT</span></div>
+        </div>
+        <div class="task-item" style="--ac:var(--college)" onclick="toggle(this)">
+          <div class="check">✓</div>
+          <div class="task-content">
+            <div class="task-name">Rehearse presentation 3 times — time yourself, stay under 10 min</div>
+            <div class="task-desc">First rehearsal: identify what's unclear. Second: smooth delivery. Third: with a friend who asks hard questions. The best presenters rehearse more than anyone. You'll be the best in the room if you do this.</div>
+            <div class="task-tags"><span class="tag tag-d">1 DAY BEFORE</span></div>
+          </div>
+          <div class="task-right"><span class="effort">REHEARSAL</span></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     AREA 2: AI GROWTH
+═══════════════════════════════════════════════ -->
+<div class="area-section" data-area="ai" id="sec-ai">
+  <div class="area-header-row" onclick="toggleSection('ai')">
+    <div class="area-icon-big">🤖</div>
+    <div class="area-title-block">
+      <div class="area-title-big">AREA 2 — AI Growth</div>
+      <div class="area-tagline">Build client engines. Ship agents. Go deep on DL. Write. Publish. Repeat.</div>
+    </div>
+    <div class="area-chevron">▾</div>
+  </div>
+  <div class="area-body" id="body-ai">
+
+    <!-- 2.1 Client Engine 1 -->
+    <div class="cat-group">
+      <div class="cat-header open" onclick="toggleCat(this)">
+        <span class="cat-badge" style="background:rgba(61,255,208,0.1);color:var(--ai);border:1px solid rgba(61,255,208,0.25)">CLIENT</span>
+        <span class="cat-title">AI Engine #1 — Build for Client</span>
+        <span class="cat-count" id="cc-e1">0/7</span>
+        <span class="cat-toggle">▾</span>
+      </div>
+      <div class="task-list">
+        <div class="task-item" style="--ac:var(--ai)" onclick="toggle(this)">
+          <div class="check">✓</div>
+          <div class="task-content">
+            <div class="task-name">Client requirements session — write a 1-page brief</div>
+            <div class="task-desc">Before writing a single line of code, sit with the client (even async) and document: What is the AI engine supposed to do? What data exists? What's the output format? What counts as success? Sign off on this before proceeding.</div>
+            <div class="task-tags"><span class="tag tag-r">FIRST STEP</span></div>
+          </div>
+          <div class="task-right"><span class="effort">DISCOVERY</span></div>
+        </div>
+        <div class="task-item" style="--ac:var(--ai)" onclick="toggle(this)">
+          <div class="check">✓</div>
+          <div class="task-content">
+            <div class="task-name">Choose architecture — RAG, fine-tuning, or agent-based?</div>
+            <div class="task-desc">
+              <strong style="color:var(--text)">RAG</strong> (Retrieval-Augmented Generation): best if client has a knowledge base/docs. Use LangChain or LlamaIndex + a vector DB (Pinecone, Chroma, Qdrant).
+              <strong style="color:var(--text)">Fine-tuning</strong>: if behaviour/tone customization is needed. Use LoRA/QLoRA on open-source models.
+              <strong style="color:var(--text)">Agent</strong>: if the engine needs to take actions/use tools. Use LangGraph or CrewAI.
+            </div>
+            <div class="task-tags"><span class="tag tag-y">WEEK 1</span><span class="tag tag-b">Architecture</span></div>
+          </div>
+          <div class="task-right"><span class="effort">DESIGN</span></div>
+        </div>
+        <div class="task-item" style="--ac:var(--ai)" onclick="toggle(this)">
+          <div class="check">✓</div>
+          <div class="task-content">
+            <div class="task-name">Set up dev environment — Python env, API keys, vector DB</div>
+            <div class="task-desc">Create a clean virtualenv. Add .env for API keys. Set up logging from day 1. Use Docker if the client needs deployment. Never hardcode API keys. Set up a test folder alongside the main code.</div>
+            <div class="task-tags"><span class="tag tag-d">SETUP</span><span class="tag tag-b">Python</span></div>
+          </div>
+          <div class="task-right"><span class="effort">ENVIRONMENT</span></div>
+        </div>
+        <div class="task-item" style="--ac:var(--ai)" onclick="toggle(this)">
+          <div class="check">✓</div>
+          <div class="task-content">
+            <div class="task-name">Build core pipeline — ingest → process → generate → respond</div>
+            <div class="task-desc">Build the happy path first. Ingest the data, chunk it, embed it, store in vector DB. Write the query pipeline. Test with 10 manual queries. Get it to 60% quality before optimizing — shipping beats perfecting.</div>
+            <div class="task-tags"><span class="tag tag-d">CORE BUILD</span></div>
+          </div>
+          <div class="task-right"><span class="effort">ENGINEERING</span></div>
+        </div>
+        <div class="task-item" style="--ac:var(--ai)" onclick="toggle(this)">
+          <div class="check">✓</div>
+          <div class="task-content">
+            <div class="task-name">Add evaluation framework — track response quality with metrics</div>
+            <div class="task-desc">Use RAGAS or a custom eval suite. Measure: Faithfulness, Answer Relevancy, Context Recall. Run evals after every major change. Without metrics, you're guessing. Never deliver something unmeasured to a client.</div>
+            <div class="task-tags"><span class="tag tag-d">EVALS</span><span class="tag tag-b">RAGAS</span></div>
+          </div>
+          <div class="task-right"><span class="effort">QUALITY</span></div>
+        </div>
+        <div class="task-item" style="--ac:var(--ai)" onclick="toggle(this)">
+          <div class="check">✓</div>
+          <div class="task-content">
+            <div class="task-name">Build a simple API wrapper — FastAPI endpoint for the engine</div>
+            <div class="task-desc">Wrap the engine in a FastAPI /query endpoint. Add a /health endpoint. Add auth (even just an API key header). This makes integration easy for the client and shows professional-grade delivery.</div>
+            <div class="task-tags"><span class="tag tag-d">API</span><span class="tag tag-b">FastAPI</span></div>
+          </div>
+          <div class="task-right"><span class="effort">DELIVERY</span></div>
+        </div>
+        <div class="task-item" style="--ac:var(--ai)" onclick="toggle(this)">
+          <div class="check">✓</div>
+          <div class="task-content">
+            <div class="task-name">Client demo + handover — document everything they need to run it</div>
+            <div class="task-desc">Write a README with: setup instructions, API docs, how to update the knowledge base, cost estimates, and known limitations. Deliver a demo recording. Get written sign-off.</div>
+            <div class="task-tags"><span class="tag tag-d">HANDOVER</span></div>
+          </div>
+          <div class="task-right"><span class="effort">DELIVERY</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2.2 Client Engine 2 -->
+    <div class="cat-group">
+      <div class="cat-header open" onclick="toggleCat(this)">
+        <span class="cat-badge" style="background:rgba(61,255,208,0.1);color:var(--ai);border:1px solid rgba(61,255,208,0.25)">CLIENT</span>
+        <span class="cat-title">AI Engine #2 — Build for Client (Start after Engine #1 MVP)</span>
+        <span class="cat-count" id="cc-e2">0/4</span>
+        <span class="cat-toggle">▾</span>
+      </div>
+      <div class="task-list">
+        <div class="task-item" style="--ac:var(--ai)" onclick="toggle(this)">
+          <div class="check">✓</div>
+          <div class="task-content">
+            <div class="task-name">Requirements gathering — define what makes this different from Engine #1</div>
+            <div class="task-desc">Reuse your requirements template from Engine #1. Identify what architecture changes, if any. Can you reuse the RAG pipeline? Can you share embedding infrastructure? Smart reuse saves 40% of time.</div>
+            <div class="task-tags"><span class="tag tag-d">AFTER MVP1</span></div>
+          </div>
+          <div class="task-right"><span class="effort">DISCOVERY</span></div>
+        </div>
+        <div class="task-item" style="--ac:var(--ai)" onclick="toggle(this)">
+          <div class="check">✓</div>
+          <div class="task-content">
+            <div class="task-name">Build core pipeline — reuse patterns from Engine #1</div>
+            <div class="task-desc">By now you know the patterns. Build faster. Focus on what's unique to this engine, not reinventing what you already built. Extract shared utilities into a common library.</div>
+            <div class="task-tags"><span class="tag tag-d">CORE BUILD</span></div>
+          </div>
+          <div class="task-right"><span class="effort">ENGINEERING</span></div>
+        </div>
+        <div class="task-item" style="--ac:var(--ai)" onclick="toggle(this)">
+          <div class="check">✓</div>
+          <div class="task-content">
+            <div class="task-name">Evals and quality benchmarking</div>
+            <div class="task-desc">Use the same eval framework from Engine #1. Compare quality across both. If something works better in Engine #2, backport it to Engine #1. Continuous improvement across both projects.</div>
+            <div class="task-tags"><span class="tag tag-d">EVALS</span></div>
+          </div>
+          <div class="task-right"><span class="effort">QUALITY</span></div>
+        </div>
+        <div class="task-item" style="--ac:var(--ai)" onclick="toggle(this)">
+          <div class="check">✓</div>
+          <div class="task-content">
+            <div class="task-name">API + delivery + client demo</div>
+            <div class="task-desc">Same professional handover as Engine #1. Double-check pricing/cost implications. Consider whether both engines could share infrastructure to save the client money — this earns trust and repeat business.</div>
+            <div class="task-tags"><span class="tag tag-d">HANDOVER</span></div>
+          </div>
+          <div class="task-right"><span class="effort">DELIVERY</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2.3 7 Agents -->
+    <div class="cat-group">
+      <div class="cat-header open" onclick="toggleCat(this)">
+        <span class="cat-badge" style="background:rgba(61,255,208,0.1);color:var(--ai);border:1px solid rgba(61,255,208,0.25)">PERSONAL</span>
+        <span class="cat-title">7 AI Agents — 1 Per Week (Personal Learning Track)</span>
+        <span class="cat-count" id="cc-ag">0/7</span>
+        <span class="cat-toggle">▾</span>
+      </div>
+      <div class="task-list">
+        <div class="task-item" style="--ac:var(--ai)" onclick="toggle(this)">
+          <div class="check">✓</div>
+          <div class="task-content">
+            <div class="task-name">Agent 1 — Research Agent (week 1): reads URLs, summarizes, answers questions</div>
+            <div class="task-desc">Start simple. Use LangChain + Tavily/SerpAPI + an LLM. Give it a topic, it searches, reads top pages, returns a structured summary. This teaches: tool use, chain construction, prompt engineering. <strong style="color:var(--text)">Tech:</strong> LangChain, OpenAI API / Ollama, Tavily.</div>
+            <div class="task-tags"><span class="tag tag-b">WEEK 1</span><span class="tag tag-d">LangChain</span><span class="tag tag-g">EASIEST</span></div>
+          </div>
+          <div class="task-right"><span class="effort">BEGINNER</span></div>
+        </div>
+        <div class="task-item" style="--ac:var(--ai)" onclick="toggle(this)">
+          <div class="check">✓</div>
+          <div class="task-content">
+            <div class="task-name">Agent 2 — Email Draft Agent (week 2): context in → professional email out</div>
+            <div class="task-desc">Input: bullet points of what to say, recipient context, tone. Output: 3 email draft options. Add a feedback loop: user picks one, agent refines. Teaches: multi-turn dialogue, prompt templating, output structuring.</div>
+            <div class="task-tags"><span class="tag tag-b">WEEK 2</span><span class="tag tag-d">Prompt Engineering</span></div>
+          </div>
+          <div class="task-right"><span class="effort">BEGINNER</span></div>
+        </div>
+        <div class="task-item" style="--ac:var(--ai)" onclick="toggle(this)">
+          <div class="check">✓</div>
+          <div class="task-content">
+            <div class="task-name">Agent 3 — Code Review Agent (week 3): paste code → structured review</div>
+            <div class="task-desc">Takes a code snippet, identifies bugs, suggests improvements, rates complexity, and recommends tests. Build a CLI tool. Add diff-based suggestions. Teaches: structured output (Pydantic models), code understanding prompts.</div>
+            <div class="task-tags"><span class="tag tag-b">WEEK 3</span><span class="tag tag-d">Pydantic</span></div>
+          </div>
+          <div class="task-right"><span class="effort">INTERMEDIATE</span></div>
+        </div>
+        <div class="task-item" style="--ac:var(--ai)" onclick="toggle(this)">
+          <div class="check">✓</div>
+          <div class="task-content">
+            <div class="task-name">Agent 4 — Data Analysis Agent (week 4): upload CSV → insights + charts</div>
+            <div class="task-desc">Takes a CSV, generates pandas code to analyze it, runs the code, returns insights and matplotlib charts. Use Code Interpreter pattern. Teaches: code-executing agents, tool calling, sandboxed execution. <strong style="color:var(--text)">Tech:</strong> LangChain Code Interpreter / E2B.</div>
+            <div class="task-tags"><span class="tag tag-b">WEEK 4</span><span class="tag tag-d">Code Interpreter</span></div>
+          </div>
+          <div class="task-right"><span class="effort">INTERMEDIATE</span></div>
+        </div>
+        <div class="task-item" style="--ac:var(--ai)" onclick="toggle(this)">
+          <div class="check">✓</div>
+          <div class="task-content">
+            <div class="task-name">Agent 5 — Job Application Agent (week 5): JD in → tailored resume + cover letter</div>
+            <div class="task-desc">Takes your base resume + a job description → outputs a tailored resume and cover letter. Teaches: document parsing, context injection, formatting. Bonus: also generates 5 likely interview questions for the role.</div>
+            <div class="task-tags"><span class="tag tag-b">WEEK 5</span><span class="tag tag-d">RAG + Generation</span></div>
+          </div>
+          <div class="task-right"><span class="effort">INTERMEDIATE</span></div>
+        </div>
+        <div class="task-item" style="--ac:var(--ai)" onclick="toggle(this)">
+          <div class="check">✓</div>
+          <div class="task-content">
+            <div class="task-name">Agent 6 — Multi-Agent Orchestrator (week 6): planner + executor agents</div>
+            <div class="task-desc">A planner agent breaks a goal into subtasks. Multiple executor agents each handle a subtask. Results are aggregated. This is the cutting edge of AI agents. Use LangGraph or CrewAI. Teaches: agent orchestration, state machines, inter-agent communication.</div>
+            <div class="task-tags"><span class="tag tag-b">WEEK 6</span><span class="tag tag-d">LangGraph/CrewAI</span><span class="tag tag-r">ADVANCED</span></div>
+          </div>
+          <div class="task-right"><span class="effort">ADVANCED</span></div>
+        </div>
+        <div class="task-item" style="--ac:var(--ai)" onclick="toggle(this)">
+          <div class="check">✓</div>
+          <div class="task-content">
+            <div class="task-name">Agent 7 — Your Dream Agent (week 7): build something you wish existed</div>
+            <div class="task-desc">Pick the most useful agent you can imagine for your own life. Study assistant? Coding pair? Personal finance tracker? Ideas generator? This is your portfolio piece — make it exceptional, add a README, deploy it, write about it on Medium. This is what gets you hired.</div>
+            <div class="task-tags"><span class="tag tag-b">WEEK 7</span><span class="tag tag-g">PORTFOLIO PIECE</span></div>
+          </div>
+          <div class="task-right"><span class="effort">CAPSTONE</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2.4 Deep Learning -->
+    <div class="cat-group">
+      <div class="cat-header open" onclick="toggleCat(this)">
+        <span class="cat-badge" style="background:rgba(61,255,208,0.1);color:var(--ai);border:1px solid rgba(61,255,208,0.25)">DEEP LEARNING</span>
+        <span class="cat-title">Deep Learning Track — LSTM → Transformers (3×/week)</span>
+        <span class="cat-count" id="cc-dl">0/9</span>
+        <span class="cat-toggle">▾</span>
+      </div>
+      <div class="task-list">
+        <div class="task-item" style="--ac:var(--ai)" onclick="toggle(this)">
+          <div class="check">✓</div>
+          <div class="task-content">
+            <div class="task-name">LSTM Theory: Understand vanishing gradient, cell state, gates</div>
+            <div class="task-desc">The core of LSTM is 4 gates: Forget, Input, Cell update, Output. Understand why vanilla RNNs fail on long sequences (vanishing gradient). Draw the LSTM cell from memory. If you can draw it, you understand it. Resource: Andrej Karpathy's "The Unreasonable Effectiveness of RNNs".</div>
+            <div class="task-tags"><span class="tag tag-b">THEORY</span><span class="tag tag-d">Karpathy Blog</span></div>
+          </div>
+          <div class="task-right"><span class="effort">UNDERSTAND</span></div>
+        </div>
+        <div class="task-item" style="--ac:var(--ai)" onclick="toggle(this)">
+          <div class="check">✓</div>
+          <div class="task-content">
+            <div class="task-name">LSTM Project 1: Stock price prediction (time series forecasting)</div>
+            <div class="task-desc">Use Yahoo Finance data + PyTorch LSTM. Preprocess: normalize, create sequences, train/val split. Build the model, train, plot predicted vs actual. This covers: data pipelines, sequence modeling, evaluation metrics (MAE, RMSE). Start with Apple/Google stock data.</div>
+            <div class="task-tags"><span class="tag tag-b">PROJECT</span><span class="tag tag-d">PyTorch</span></div>
+          </div>
+          <div class="task-right"><span class="effort">BUILD</span></div>
+        </div>
+        <div class="task-item" style="--ac:var(--ai)" onclick="toggle(this)">
+          <div class="check">✓</div>
+          <div class="task-content">
+            <div class="task-name">LSTM Project 2: Text generation with character-level LSTM</div>
+            <div class="task-desc">Train on any text corpus (Shakespeare, code, song lyrics). Teach the model to predict the next character. Temperature sampling for creativity control. This is how early language models worked — understanding it gives deep intuition. Implement from scratch in PyTorch.</div>
+            <div class="task-tags"><span class="tag tag-b">PROJECT</span><span class="tag tag-d">NLP</span></div>
+          </div>
+          <div class="task-right"><span class="effort">BUILD</span></div>
+        </div>
+        <div class="task-item" style="--ac:var(--ai)" onclick="toggle(this)">
+          <div class="check">✓</div>
+          <div class="task-content">
+            <div class="task-name">GRU — understand how it simplifies LSTM and when to use each</div>
+            <div class="task-desc">GRU has 2 gates (Reset + Update) vs LSTM's 4. Faster to train, often similar accuracy. Rule of thumb: try GRU first, switch to LSTM if long-term memory matters. Replace your LSTM project with GRU and compare results — understanding difference through doing.</div>
+            <div class="task-tags"><span class="tag tag-b">THEORY + CODE</span></div>
+          </div>
+          <div class="task-right"><span class="effort">COMPARE</span></div>
+        </div>
+        <div class="task-item" style="--ac:var(--ai)" onclick="toggle(this)">
+          <div class="check">✓</div>
+          <div class="task-content">
+            <div class="task-name">Attention Mechanism — understand "Attention is All You Need" paper</div>
+            <div class="task-desc">Read the 2017 Transformer paper. Understand: Query, Key, Value matrices. Scaled dot-product attention. Multi-head attention. Positional encoding. This paper changed AI forever. Take notes on every formula. Then watch Andrej Karpathy's "Let's build GPT from scratch" video.</div>
+            <div class="task-tags"><span class="tag tag-b">SEMINAL PAPER</span><span class="tag tag-d">Karpathy Video</span></div>
+          </div>
+          <div class="task-right"><span class="effort">THEORY</span></div>
+        </div>
+        <div class="task-item" style="--ac:var(--ai)" onclick="toggle(this)">
+          <div class="check">✓</div>
+          <div class="task-content">
+            <div class="task-name">Build a mini Transformer from scratch for sequence classification</div>
+            <div class="task-desc">Implement: self-attention, positional encoding, encoder block, classification head. Train on SST-2 (sentiment) or AG News (topic classification). No HuggingFace shortcuts — implement every component yourself. This is the most important DL exercise you can do.</div>
+            <div class="task-tags"><span class="tag tag-b">PROJECT</span><span class="tag tag-r">KEY SKILL</span></div>
+          </div>
+          <div class="task-right"><span class="effort">BUILD</span></div>
+        </div>
+        <div class="task-item" style="--ac:var(--ai)" onclick="toggle(this)">
+          <div class="check">✓</div>
+          <div class="task-content">
+            <div class="task-name">Fine-tune BERT/DistilBERT on a custom NLP task using HuggingFace</div>
+            <div class="task-desc">Pick a task: sentiment analysis, NER, QA, or text classification on a dataset relevant to your interests. Use HuggingFace Trainer API. Train on Colab/Kaggle (free GPU). Push the model to HuggingFace Hub. This is now a live portfolio piece.</div>
+            <div class="task-tags"><span class="tag tag-b">PROJECT</span><span class="tag tag-g">PORTFOLIO</span><span class="tag tag-d">HuggingFace</span></div>
+          </div>
+          <div class="task-right"><span class="effort">ADVANCED</span></div>
+        </div>
+        <div class="task-item" style="--ac:var(--ai)" onclick="toggle(this)">
+          <div class="check">✓</div>
+          <div class="task-content">
+            <div class="task-name">LoRA / QLoRA — fine-tune an LLM on a small GPU (parameter-efficient)</div>
+            <div class="task-desc">Full fine-tuning requires massive GPUs. LoRA lets you fine-tune on Colab by only updating low-rank adapter matrices. Fine-tune Mistral 7B or Llama 3 on a custom dataset (your own Q&A pairs, a specific domain). Use Unsloth for speed. Write a blog about this — it's cutting-edge.</div>
+            <div class="task-tags"><span class="tag tag-b">PROJECT</span><span class="tag tag-r">ADVANCED</span><span class="tag tag-d">Unsloth</span></div>
+          </div>
+          <div class="task-right"><span class="effort">FRONTIER</span></div>
+        </div>
+        <div class="task-item" style="--ac:var(--ai)" onclick="toggle(this)">
+          <div class="check">✓</div>
+          <div class="task-content">
+            <div class="task-name">Write & publish DL learning journey: 4 Medium posts (one per milestone)</div>
+            <div class="task-desc">Post 1: LSTM explained with code. Post 2: Building a mini Transformer from scratch. Post 3: Fine-tuning BERT on custom data. Post 4: LLM fine-tuning with LoRA. Writing forces understanding and builds your public profile. Cross-post threads to Twitter/X for reach.</div>
+            <div class="task-tags"><span class="tag tag-g">CONTENT</span><span class="tag tag-d">Medium + Twitter</span></div>
+          </div>
+          <div class="task-right"><span class="effort">WRITE</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2.5 Blogs -->
+    <div class="cat-group">
+      <div class="cat-header open" onclick="toggleCat(this)">
+        <span class="cat-badge" style="background:rgba(61,255,208,0.1);color:var(--ai);border:1px solid rgba(61,255,208,0.25)">CONTENT</span>
+        <span class="cat-title">Medium & Twitter — Build Your Public AI Presence</span>
+        <span class="cat-count" id="cc-blog">0/5</span>
+        <span class="cat-toggle">▾</span>
+      </div>
+      <div class="task-list">
+        <div class="task-item" style="--ac:var(--ai)" onclick="toggle(this)">
+          <div class="check">✓</div>
+          <div class="task-content">
+            <div class="task-name">Create a 4-week content calendar — what to write and when</div>
+            <div class="task-desc">Batch topic ideas once a week. Write outlines in bulk. Never stare at a blank page — decide topics on Sunday, write drafts on Tuesday/Thursday, publish Friday. Rule: one new idea from whatever you learned that week. Your learning IS your content.</div>
+            <div class="task-tags"><span class="tag tag-r">DO SUNDAY</span><span class="tag tag-d">30 min/week</span></div>
+          </div>
+          <div class="task-right"><span class="effort">PLANNING</span></div>
+        </div>
+        <div class="task-item" style="--ac:var(--ai)" onclick="toggle(this)">
+          <div class="check">✓</div>
+          <div class="task-content">
+            <div class="task-name">Optimize Medium profile — bio, banner, link to GitHub + Twitter</div>
+            <div class="task-desc">Your profile is the first thing readers see. Clear bio: "Final-year CS student | Building AI agents and LLM systems | Writing about what I learn". Add your GitHub. Join relevant publications (Towards Data Science, Better Programming). This gets your work 10x more readers.</div>
+            <div class="task-tags"><span class="tag tag-d">ONCE</span><span class="tag tag-d">30 min</span></div>
+          </div>
+          <div class="task-right"><span class="effort">SETUP</span></div>
+        </div>
+        <div class="task-item" style="--ac:var(--ai)" onclick="toggle(this)">
+          <div class="check">✓</div>
+          <div class="task-content">
+            <div class="task-name">Twitter/X: Post 1 technical thread per week (5-10 tweets)</div>
+            <div class="task-desc">Format that works: Tweet 1 = hook (the interesting result/insight). Tweets 2-8 = the explanation. Tweet 9 = code snippet. Tweet 10 = link to full Medium post. Threads get 5-20x more reach than single posts. Post on Tuesday or Wednesday morning for best engagement.</div>
+            <div class="task-tags"><span class="tag tag-d">WEEKLY</span></div>
+          </div>
+          <div class="task-right"><span class="effort">SOCIAL</span></div>
+        </div>
+        <div class="task-item" style="--ac:var(--ai)" onclick="toggle(this)">
+          <div class="check">✓</div>
+          <div class="task-content">
+            <div class="task-name">Topic ideas list — never run out (add to this as you learn)</div>
+            <div class="task-desc">
+              Starter ideas: "I built 7 AI agents — here's what I learned", "LSTM vs Transformer: explained with code", "How I delivered an AI engine to a client as a student", "My Summer of Bitcoin experience", "LeetCode 200 problems in 2 months — patterns I learned", "Building a Go REST API as a Python dev". 
+              Every confusion you overcome = a blog post.
+            </div>
+            <div class="task-tags"><span class="tag tag-g">REFERENCE</span></div>
+          </div>
+          <div class="task-right"><span class="effort">IDEAS</span></div>
+        </div>
+        <div class="task-item" style="--ac:var(--ai)" onclick="toggle(this)">
+          <div class="check">✓</div>
+          <div class="task-content">
+            <div class="task-name">Engage with other AI writers/builders on Twitter — reply, repost, comment</div>
+            <div class="task-desc">Spend 10 min/day engaging. Comment on posts from people you admire in AI. Genuine comments on popular threads get you followers for free. This isn't wasted time — it's networking that leads to opportunities, collaborations, and job referrals.</div>
+            <div class="task-tags"><span class="tag tag-d">10 MIN/DAY</span></div>
+          </div>
+          <div class="task-right"><span class="effort">NETWORK</span></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     AREA 3: ADDITIONAL
+═══════════════════════════════════════════════ -->
+<div class="area-section" data-area="extra" id="sec-extra">
+  <div class="area-header-row" onclick="toggleSection('extra')">
+    <div class="area-icon-big">⚙️</div>
+    <div class="area-title-block">
+      <div class="area-title-big">AREA 3 — Additional Important Tasks</div>
+      <div class="area-tagline">Summer of Bitcoin is live NOW. Java + Go expand your value. OpenClaw is a one-day setup.</div>
+    </div>
+    <div class="area-chevron">▾</div>
+  </div>
+  <div class="area-body" id="body-extra">
+
+    <!-- 3.1 SOB -->
+    <div class="cat-group">
+      <div class="cat-header open" onclick="toggleCat(this)">
+        <span class="cat-badge" style="background:rgba(255,94,94,0.12);color:var(--red);border:1px solid rgba(255,94,94,0.3)">🔥 URGENT</span>
+        <span class="cat-title">Summer of Bitcoin — Round 1 (Deadline: March 15)</span>
+        <span class="cat-count" id="cc-sob">0/8</span>
+        <span class="cat-toggle">▾</span>
+      </div>
+      <div class="task-list">
+        <div class="task-item" style="--ac:var(--extra)" onclick="toggle(this)">
+          <div class="check">✓</div>
+          <div class="task-content">
+            <div class="task-name">Read the SOB program guidelines fully — understand what Round 1 requires</div>
+            <div class="task-desc">Visit summerofbitcoin.org. Understand: What is a valid contribution? What projects are listed? What counts as a "merged PR"? How are proposals evaluated? Read the FAQ twice. Do not start contributing before understanding the selection criteria.</div>
+            <div class="task-tags"><span class="tag tag-r">DO TODAY</span><span class="tag tag-d">1 hr</span></div>
+          </div>
+          <div class="task-right"><span class="effort">CRITICAL</span></div>
+        </div>
+        <div class="task-item" style="--ac:var(--extra)" onclick="toggle(this)">
+          <div class="check">✓</div>
+          <div class="task-content">
+            <div class="task-name">Browse the listed Bitcoin projects and pick 2-3 to explore</div>
+            <div class="task-desc">Look at: Bitcoin Core, LND, Core Lightning, BTCPay Server, Fedimint, Mutiny Wallet. For each: check open issues labeled "good first issue" or "help wanted". Prioritize projects where you understand the tech stack. Don't just pick the most popular one — pick where you can contribute fastest.</div>
+            <div class="task-tags"><span class="tag tag-r">DAY 1-2</span></div>
+          </div>
+          <div class="task-right"><span class="effort">EXPLORE</span></div>
+        </div>
+        <div class="task-item" style="--ac:var(--extra)" onclick="toggle(this)">
+          <div class="check">✓</div>
+          <div class="task-content">
+            <div class="task-name">Set up the development environment for your chosen project</div>
+            <div class="task-desc">Clone the repo. Read CONTRIBUTING.md completely. Follow the setup instructions. Run the test suite — make sure everything passes. Ask in the project Discord/IRC if setup fails. Getting set up is 30% of the battle. Many applicants fail here.</div>
+            <div class="task-tags"><span class="tag tag-r">DAY 2-3</span><span class="tag tag-d">BUILD ENV</span></div>
+          </div>
+          <div class="task-right"><span class="effort">SETUP</span></div>
+        </div>
+        <div class="task-item" style="--ac:var(--extra)" onclick="toggle(this)">
+          <div class="check">✓</div>
+          <div class="task-content">
+            <div class="task-name">Read the codebase — understand the folder structure and core flows</div>
+            <div class="task-desc">Spend 2-3 hours just reading code, not writing it. Find: where does the program start? What are the core data structures? What does a transaction look like in code? Annotate with comments in your local fork. Understanding the code = finding places to contribute naturally.</div>
+            <div class="task-tags"><span class="tag tag-r">DAY 3-5</span><span class="tag tag-d">2-3 hrs</span></div>
+          </div>
+          <div class="task-right"><span class="effort">UNDERSTAND</span></div>
+        </div>
+        <div class="task-item" style="--ac:var(--extra)" onclick="toggle(this)">
+          <div class="check">✓</div>
+          <div class="task-content">
+            <div class="task-name">Make first contribution — fix a bug, improve docs, add a test</div>
+            <div class="task-desc">
+              <strong style="color:var(--text)">Easiest path:</strong> Find a failing test or missing test → write it. Fix a typo in docs or improve an unclear error message. These small PRs show you understand the codebase and build reviewer trust for bigger contributions.
+              Follow the commit message convention exactly. Add tests. Request review from the right person.
+            </div>
+            <div class="task-tags"><span class="tag tag-r">WEEK 1-2</span><span class="tag tag-d">FIRST PR</span></div>
+          </div>
+          <div class="task-right"><span class="effort">CONTRIBUTE</span></div>
+        </div>
+        <div class="task-item" style="--ac:var(--extra)" onclick="toggle(this)">
+          <div class="check">✓</div>
+          <div class="task-content">
+            <div class="task-name">Make a second, more meaningful contribution — feature or significant bugfix</div>
+            <div class="task-desc">After your first PR is merged or in review, go deeper. Look for a feature request in issues. Discuss your approach in the issue before coding — this shows maturity and avoids wasted effort. Aim to have 2 PRs open or merged before March 10. More = better selection chance.</div>
+            <div class="task-tags"><span class="tag tag-r">BEFORE MAR 10</span></div>
+          </div>
+          <div class="task-right"><span class="effort">CONTRIBUTE</span></div>
+        </div>
+        <div class="task-item" style="--ac:var(--extra)" onclick="toggle(this)">
+          <div class="check">✓</div>
+          <div class="task-content">
+            <div class="task-name">Write your SOB project proposal — clear, specific, realistic</div>
+            <div class="task-desc">The proposal is what gets you selected. Format: Problem statement, Proposed solution, Technical approach, Timeline (week by week), Deliverables, Why you are the right person. Be specific — generic proposals are rejected. Reference your merged PRs as proof of ability. Get it reviewed by a mentor or experienced person before submitting.</div>
+            <div class="task-tags"><span class="tag tag-r">BEFORE MAR 13</span><span class="tag tag-d">PROPOSAL</span></div>
+          </div>
+          <div class="task-right"><span class="effort">CRITICAL</span></div>
+        </div>
+        <div class="task-item" style="--ac:var(--extra)" onclick="toggle(this)">
+          <div class="check">✓</div>
+          <div class="task-content">
+            <div class="task-name">Submit final application by March 14 — don't wait for March 15</div>
+            <div class="task-desc">Give yourself a day of buffer. Final check: proposal is clear and well-written, all links to PRs work, contribution history is visible on your GitHub, you've answered all required sections. Submit, then notify any mentors you've been talking to.</div>
+            <div class="task-tags"><span class="tag tag-r">DEADLINE: MAR 14</span></div>
+          </div>
+          <div class="task-right"><span class="effort">SUBMIT</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3.2 Java -->
+    <div class="cat-group">
+      <div class="cat-header open" onclick="toggleCat(this)">
+        <span class="cat-badge" style="background:rgba(192,132,252,0.1);color:var(--extra);border:1px solid rgba(192,132,252,0.25)">JAVA</span>
+        <span class="cat-title">Java — Introduction to Industry-Grade Projects</span>
+        <span class="cat-count" id="cc-java">0/7</span>
+        <span class="cat-toggle">▾</span>
+      </div>
+      <div class="task-list">
+        <div class="task-item" style="--ac:var(--extra)" onclick="toggle(this)">
+          <div class="check">✓</div>
+          <div class="task-content">
+            <div class="task-name">Java OOP fundamentals — Classes, Interfaces, Inheritance, Polymorphism</div>
+            <div class="task-desc">You know Python OOP — Java is more explicit. Learn: access modifiers (public/private/protected), abstract classes vs interfaces, method overriding vs overloading. Build a simple bank account system to practice. Key insight: Java forces you to think about types and contracts in a way Python doesn't.</div>
+            <div class="task-tags"><span class="tag tag-p">DAY 1-2</span><span class="tag tag-d">Java</span></div>
+          </div>
+          <div class="task-right"><span class="effort">BASICS</span></div>
+        </div>
+        <div class="task-item" style="--ac:var(--extra)" onclick="toggle(this)">
+          <div class="check">✓</div>
+          <div class="task-content">
+            <div class="task-name">Java Collections Framework — List, Map, Set, Queue (and when to use each)</div>
+            <div class="task-desc">Master: ArrayList vs LinkedList, HashMap vs TreeMap vs LinkedHashMap, HashSet vs TreeSet, PriorityQueue. These appear in LeetCode AND interviews. Build a simple inventory management system using the right collections. Know the time complexity of every operation.</div>
+            <div class="task-tags"><span class="tag tag-p">DAY 3-4</span><span class="tag tag-d">Data Structures</span></div>
+          </div>
+          <div class="task-right"><span class="effort">IMPORTANT</span></div>
+        </div>
+        <div class="task-item" style="--ac:var(--extra)" onclick="toggle(this)">
+          <div class="check">✓</div>
+          <div class="task-content">
+            <div class="task-name">Multithreading and Concurrency basics — Thread, Runnable, synchronized</div>
+            <div class="task-desc">Java is famous for multithreading. Learn: Thread lifecycle, Runnable vs Callable, synchronized keyword, wait/notify, ExecutorService, and CompletableFuture. Build a simple producer-consumer problem. This comes up in senior interviews constantly.</div>
+            <div class="task-tags"><span class="tag tag-p">DAY 5-7</span><span class="tag tag-d">Concurrency</span></div>
+          </div>
+          <div class="task-right"><span class="effort">INTERMEDIATE</span></div>
+        </div>
+        <div class="task-item" style="--ac:var(--extra)" onclick="toggle(this)">
+          <div class="check">✓</div>
+          <div class="task-content">
+            <div class="task-name">Build Project 1 — REST API with Spring Boot (CRUD application)</div>
+            <div class="task-desc">Build a Task Manager API: Spring Boot + Spring Data JPA + H2/PostgreSQL. Endpoints: GET/POST/PUT/DELETE for tasks. Add: validation (@Valid), error handling (@ControllerAdvice), Swagger docs. This is literally what Java developers do at every company. It's your industry-grade foundation.</div>
+            <div class="task-tags"><span class="tag tag-p">WEEK 2</span><span class="tag tag-d">Spring Boot</span><span class="tag tag-g">PROJECT</span></div>
+          </div>
+          <div class="task-right"><span class="effort">BUILD</span></div>
+        </div>
+        <div class="task-item" style="--ac:var(--extra)" onclick="toggle(this)">
+          <div class="check">✓</div>
+          <div class="task-content">
+            <div class="task-name">Build Project 2 — Add Spring Security + JWT auth to your API</div>
+            <div class="task-desc">Add user registration/login, JWT token generation and validation, protected endpoints, role-based access (ADMIN vs USER). This makes your project truly production-grade. JWT + Spring Security is required knowledge for any Java backend role.</div>
+            <div class="task-tags"><span class="tag tag-p">WEEK 3</span><span class="tag tag-d">Security</span></div>
+          </div>
+          <div class="task-right"><span class="effort">ADVANCED</span></div>
+        </div>
+        <div class="task-item" style="--ac:var(--extra)" onclick="toggle(this)">
+          <div class="check">✓</div>
+          <div class="task-content">
+            <div class="task-name">Write unit tests with JUnit 5 + Mockito</div>
+            <div class="task-desc">Test your service layer with JUnit 5. Mock dependencies with Mockito. Aim for 70%+ code coverage. Test: happy path, edge cases, error scenarios. No untested code in industry — this differentiates serious engineers from students.</div>
+            <div class="task-tags"><span class="tag tag-p">WEEK 3-4</span><span class="tag tag-d">Testing</span></div>
+          </div>
+          <div class="task-right"><span class="effort">TESTING</span></div>
+        </div>
+        <div class="task-item" style="--ac:var(--extra)" onclick="toggle(this)">
+          <div class="check">✓</div>
+          <div class="task-content">
+            <div class="task-name">Dockerize your Spring Boot app + push to GitHub with README</div>
+            <div class="task-desc">Write a Dockerfile, docker-compose.yml (app + PostgreSQL). Push to GitHub with a clean README: what it does, how to run it, API docs, architecture diagram. This is your Java portfolio piece. Link it in your resume under "Projects".</div>
+            <div class="task-tags"><span class="tag tag-g">PORTFOLIO</span><span class="tag tag-d">Docker</span></div>
+          </div>
+          <div class="task-right"><span class="effort">SHIP IT</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3.3 Go -->
+    <div class="cat-group">
+      <div class="cat-header open" onclick="toggleCat(this)">
+        <span class="cat-badge" style="background:rgba(192,132,252,0.1);color:var(--extra);border:1px solid rgba(192,132,252,0.25)">GO</span>
+        <span class="cat-title">Go (Golang) — Basics + Industry Project</span>
+        <span class="cat-count" id="cc-go">0/5</span>
+        <span class="cat-toggle">▾</span>
+      </div>
+      <div class="task-list">
+        <div class="task-item" style="--ac:var(--extra)" onclick="toggle(this)">
+          <div class="check">✓</div>
+          <div class="task-content">
+            <div class="task-name">Go basics — syntax, types, goroutines, channels, interfaces</div>
+            <div class="task-desc">Use "A Tour of Go" (go.dev/tour) — it's interactive and covers everything. Key differences from Python: static typing, explicit error handling (no exceptions), goroutines for concurrency (not threads), interfaces are implicit. Spend 2-3 hours completing the Tour.</div>
+            <div class="task-tags"><span class="tag tag-p">DAY 1</span><span class="tag tag-d">go.dev/tour</span></div>
+          </div>
+          <div class="task-right"><span class="effort">LEARN</span></div>
+        </div>
+        <div class="task-item" style="--ac:var(--extra)" onclick="toggle(this)">
+          <div class="check">✓</div>
+          <div class="task-content">
+            <div class="task-name">Goroutines and channels — Go's killer feature, understand it deeply</div>
+            <div class="task-desc">Go's concurrency model is its biggest advantage. Build: a concurrent web scraper, a worker pool, a simple pub/sub system using channels. Understand: goroutine leaks, buffered vs unbuffered channels, select statement, WaitGroups. This is why companies like Uber, Google, Cloudflare use Go.</div>
+            <div class="task-tags"><span class="tag tag-p">DAY 2-3</span><span class="tag tag-d">Concurrency</span></div>
+          </div>
+          <div class="task-right"><span class="effort">KEY SKILL</span></div>
+        </div>
+        <div class="task-item" style="--ac:var(--extra)" onclick="toggle(this)">
+          <div class="check">✓</div>
+          <div class="task-content">
+            <div class="task-name">Build a REST API in Go using net/http or Gin framework</div>
+            <div class="task-desc">Build a URL shortener API or a simple blog API. Endpoints: CRUD operations. Use Gin for routing, GORM for database (SQLite). Add middleware: logging, CORS, rate limiting. Compare the performance to your Python/Spring Boot API — Go is typically 5-10x faster. This is your weekend sprint project.</div>
+            <div class="task-tags"><span class="tag tag-p">WEEKEND 1</span><span class="tag tag-d">Gin + GORM</span><span class="tag tag-g">PROJECT</span></div>
+          </div>
+          <div class="task-right"><span class="effort">BUILD</span></div>
+        </div>
+        <div class="task-item" style="--ac:var(--extra)" onclick="toggle(this)">
+          <div class="check">✓</div>
+          <div class="task-content">
+            <div class="task-name">Add unit tests with Go testing package</div>
+            <div class="task-desc">Go has testing built-in — no external library needed. Write table-driven tests (Go's idiomatic approach). Run with `go test ./...`. Add benchmarks for your critical paths. Test coverage via `go test -cover`. Clean, tested Go code is extremely rare from students — it will impress.</div>
+            <div class="task-tags"><span class="tag tag-p">WEEKEND 1</span><span class="tag tag-d">Testing</span></div>
+          </div>
+          <div class="task-right"><span class="effort">TESTING</span></div>
+        </div>
+        <div class="task-item" style="--ac:var(--extra)" onclick="toggle(this)">
+          <div class="check">✓</div>
+          <div class="task-content">
+            <div class="task-name">Deploy Go API to Railway/Fly.io + push to GitHub with README</div>
+            <div class="task-desc">Go binaries compile to a single file — deployment is trivially simple. Write a Dockerfile (FROM golang:alpine → compile → FROM scratch → copy binary). Deploy. Add to GitHub with README. Now you have a live Go API in your portfolio.</div>
+            <div class="task-tags"><span class="tag tag-g">PORTFOLIO</span><span class="tag tag-d">Deploy</span></div>
+          </div>
+          <div class="task-right"><span class="effort">SHIP IT</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3.4 Python Industry -->
+    <div class="cat-group">
+      <div class="cat-header open" onclick="toggleCat(this)">
+        <span class="cat-badge" style="background:rgba(192,132,252,0.1);color:var(--extra);border:1px solid rgba(192,132,252,0.25)">PYTHON</span>
+        <span class="cat-title">Python — Industry-Grade Project (You already know Python, make it shine)</span>
+        <span class="cat-count" id="cc-py">0/4</span>
+        <span class="cat-toggle">▾</span>
+      </div>
+      <div class="task-list">
+        <div class="task-item" style="--ac:var(--extra)" onclick="toggle(this)">
+          <div class="check">✓</div>
+          <div class="task-content">
+            <div class="task-name">Build a FastAPI microservice — async, typed, with proper project structure</div>
+            <div class="task-desc">Use async def everywhere. Add Pydantic models for all request/response schemas. Use SQLAlchemy async ORM. Add Alembic for database migrations. Structure: app/api/, app/models/, app/services/, app/core/. This is production Python — far beyond what most students know.</div>
+            <div class="task-tags"><span class="tag tag-p">WEEKEND</span><span class="tag tag-d">FastAPI + SQLAlchemy</span><span class="tag tag-g">PROJECT</span></div>
+          </div>
+          <div class="task-right"><span class="effort">BUILD</span></div>
+        </div>
+        <div class="task-item" style="--ac:var(--extra)" onclick="toggle(this)">
+          <div class="check">✓</div>
+          <div class="task-content">
+            <div class="task-name">Add Redis caching, background tasks with Celery, and proper logging</div>
+            <div class="task-desc">Cache expensive queries in Redis (TTL-based). Offload long tasks to Celery workers (email sending, report generation). Use Python logging with structlog for JSON logs. These three additions take your project from "student" to "production-grade". Add all three to your FastAPI app.</div>
+            <div class="task-tags"><span class="tag tag-p">WEEK 2</span><span class="tag tag-d">Redis + Celery</span></div>
+          </div>
+          <div class="task-right"><span class="effort">INTERMEDIATE</span></div>
+        </div>
+        <div class="task-item" style="--ac:var(--extra)" onclick="toggle(this)">
+          <div class="check">✓</div>
+          <div class="task-content">
+            <div class="task-name">Write pytest tests — unit, integration, and API tests</div>
+            <div class="task-desc">Use pytest + pytest-asyncio for async tests. Use httpx AsyncClient to test your FastAPI endpoints. Mock external services with pytest-mock. Test: happy paths, validation errors, auth failures, edge cases. Target 80%+ coverage.</div>
+            <div class="task-tags"><span class="tag tag-p">WEEK 2</span><span class="tag tag-d">pytest</span></div>
+          </div>
+          <div class="task-right"><span class="effort">TESTING</span></div>
+        </div>
+        <div class="task-item" style="--ac:var(--extra)" onclick="toggle(this)">
+          <div class="check">✓</div>
+          <div class="task-content">
+            <div class="task-name">Dockerize + add GitHub Actions CI/CD pipeline</div>
+            <div class="task-desc">Write docker-compose with app, PostgreSQL, Redis. Add a GitHub Actions workflow: on push → run tests → if pass → build Docker image → push to registry. This is DevOps that 99% of student projects lack. It's a massive differentiator.</div>
+            <div class="task-tags"><span class="tag tag-g">PORTFOLIO</span><span class="tag tag-d">CI/CD</span></div>
+          </div>
+          <div class="task-right"><span class="effort">DEVOPS</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3.5 OpenClaw -->
+    <div class="cat-group">
+      <div class="cat-header open" onclick="toggleCat(this)">
+        <span class="cat-badge" style="background:rgba(192,132,252,0.1);color:var(--extra);border:1px solid rgba(192,132,252,0.25)">SETUP</span>
+        <span class="cat-title">OpenClaw — Config Setup (One-Evening Task)</span>
+        <span class="cat-count" id="cc-oc">0/3</span>
+        <span class="cat-toggle">▾</span>
+      </div>
+      <div class="task-list">
+        <div class="task-item" style="--ac:var(--extra)" onclick="toggle(this)">
+          <div class="check">✓</div>
+          <div class="task-content">
+            <div class="task-name">Clone OpenClaw, read the docs, understand the config system</div>
+            <div class="task-desc">Clone the repo. Read README.md fully. Find where config files live. Understand what is configurable: controls, physics, AI behavior, graphics. Map out every config option before changing anything. Understanding before modifying prevents hours of debugging.</div>
+            <div class="task-tags"><span class="tag tag-p">1 EVENING</span></div>
+          </div>
+          <div class="task-right"><span class="effort">READ FIRST</span></div>
+        </div>
+        <div class="task-item" style="--ac:var(--extra)" onclick="toggle(this)">
+          <div class="check">✓</div>
+          <div class="task-content">
+            <div class="task-name">Write your own config files — customize controls, physics, and behavior</div>
+            <div class="task-desc">Create your config files in a separate directory. Add comments explaining each setting. Keep the original defaults intact — use your config as an override. Commit your config to a personal GitHub dotfiles repo.</div>
+            <div class="task-tags"><span class="tag tag-p">1 EVENING</span></div>
+          </div>
+          <div class="task-right"><span class="effort">CONFIGURE</span></div>
+        </div>
+        <div class="task-item" style="--ac:var(--extra)" onclick="toggle(this)">
+          <div class="check">✓</div>
+          <div class="task-content">
+            <div class="task-name">Test your config — verify everything works, document any issues found</div>
+            <div class="task-desc">Run OpenClaw with your config. Test every setting you changed. If you find a bug or unclear documentation, raise an issue on the repo — that's a contribution. This is how open source contributors are made.</div>
+            <div class="task-tags"><span class="tag tag-p">1 EVENING</span></div>
+          </div>
+          <div class="task-right"><span class="effort">TEST</span></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     AREA 4: PLACEMENTS
+═══════════════════════════════════════════════ -->
+<div class="area-section" data-area="place" id="sec-place">
+  <div class="area-header-row" onclick="toggleSection('place')">
+    <div class="area-icon-big">💼</div>
+    <div class="area-title-block">
+      <div class="area-title-big">AREA 4 — Placements</div>
+      <div class="area-tagline">Every day you skip LeetCode, someone else doesn't. Consistency over intensity.</div>
+    </div>
+    <div class="area-chevron">▾</div>
+  </div>
+  <div class="area-body" id="body-place">
+
+    <!-- 4.1 LeetCode -->
+    <div class="cat-group">
+      <div class="cat-header open" onclick="toggleCat(this)">
+        <span class="cat-badge" style="background:rgba(253,224,71,0.1);color:var(--place);border:1px solid rgba(253,224,71,0.25)">DAILY</span>
+        <span class="cat-title">LeetCode — 6-8 Problems/Day, Pattern-Based Approach</span>
+        <span class="cat-count" id="cc-lc">0/10</span>
+        <span class="cat-toggle">▾</span>
+      </div>
+      <div class="task-list">
+        <div class="task-item" style="--ac:var(--place)" onclick="toggle(this)">
+          <div class="check">✓</div>
+          <div class="task-content">
+            <div class="task-name">Week 1-2: Arrays & Strings — Two Pointers, Sliding Window, Prefix Sum</div>
+            <div class="task-desc">
+              <strong style="color:var(--text)">Two Pointers:</strong> Container With Most Water, 3Sum, Trapping Rain Water.
+              <strong style="color:var(--text)">Sliding Window:</strong> Longest Substring Without Repeating Characters, Minimum Window Substring.
+              <strong style="color:var(--text)">Prefix Sum:</strong> Subarray Sum Equals K, Product of Array Except Self.
+              Do 2 easy + 3 medium + 1 hard per day. Time each problem — target 20 min for easy, 30 for medium, 45 for hard.
+            </div>
+            <div class="task-tags"><span class="tag tag-y">WEEK 1-2</span><span class="tag tag-d">~60 problems</span></div>
+          </div>
+          <div class="task-right"><span class="effort">FOUNDATION</span></div>
+        </div>
+        <div class="task-item" style="--ac:var(--place)" onclick="toggle(this)">
+          <div class="check">✓</div>
+          <div class="task-content">
+            <div class="task-name">Week 3-4: Linked Lists & Stacks — Fast/Slow Pointers, Monotonic Stack</div>
+            <div class="task-desc">
+              <strong style="color:var(--text)">Linked Lists:</strong> Reverse Linked List, Detect Cycle (Floyd's algo), Merge K Sorted Lists, LRU Cache.
+              <strong style="color:var(--text)">Stacks:</strong> Valid Parentheses, Daily Temperatures, Largest Rectangle in Histogram, Next Greater Element.
+              Know: dummy node trick, fast/slow pointer for cycle detection, and when a stack vs deque is needed.
+            </div>
+            <div class="task-tags"><span class="tag tag-y">WEEK 3-4</span><span class="tag tag-d">~60 problems</span></div>
+          </div>
+          <div class="task-right"><span class="effort">PATTERN</span></div>
+        </div>
+        <div class="task-item" style="--ac:var(--place)" onclick="toggle(this)">
+          <div class="check">✓</div>
+          <div class="task-content">
+            <div class="task-name">Week 5-6: Trees & Graphs — DFS, BFS, Union-Find, Topological Sort</div>
+            <div class="task-desc">
+              <strong style="color:var(--text)">Trees:</strong> All traversals iteratively, LCA, Serialize/Deserialize Binary Tree, BST operations.
+              <strong style="color:var(--text)">Graphs:</strong> Number of Islands, Course Schedule (cycle detection in directed graph), Word Ladder (BFS), Dijkstra's algorithm.
+              These are the most common interview topics at product companies. Invest deeply here.
+            </div>
+            <div class="task-tags"><span class="tag tag-y">WEEK 5-6</span><span class="tag tag-d">~60 problems</span></div>
+          </div>
+          <div class="task-right"><span class="effort">HIGH PRIORITY</span></div>
+        </div>
+        <div class="task-item" style="--ac:var(--place)" onclick="toggle(this)">
+          <div class="check">✓</div>
+          <div class="task-content">
+            <div class="task-name">Week 7-8: Dynamic Programming — Patterns (0/1 Knapsack, LCS, DP on grids)</div>
+            <div class="task-desc">
+              Learn DP through patterns, not memorization. 
+              <strong style="color:var(--text)">1D DP:</strong> Climbing Stairs, House Robber, Coin Change.
+              <strong style="color:var(--text)">2D DP:</strong> Unique Paths, Edit Distance, Longest Common Subsequence.
+              <strong style="color:var(--text)">Interval DP:</strong> Burst Balloons, Matrix Chain Multiplication.
+              DP is the hardest — start early, do it slowly, and always define the state before coding.
+            </div>
+            <div class="task-tags"><span class="tag tag-y">WEEK 7-8</span><span class="tag tag-d">~60 problems</span></div>
+          </div>
+          <div class="task-right"><span class="effort">HARDEST</span></div>
+        </div>
+        <div class="task-item" style="--ac:var(--place)" onclick="toggle(this)">
+          <div class="check">✓</div>
+          <div class="task-content">
+            <div class="task-name">Heaps, Priority Queues, and Greedy algorithms</div>
+            <div class="task-desc">Heap problems: Top K Frequent Elements, Find Median from Data Stream, Task Scheduler. Greedy: Jump Game, Meeting Rooms, Minimum Number of Arrows. Know when greedy works (local optimal = global optimal) vs when you need DP (overlapping subproblems).</div>
+            <div class="task-tags"><span class="tag tag-d">ONGOING</span></div>
+          </div>
+          <div class="task-right"><span class="effort">PATTERN</span></div>
+        </div>
+        <div class="task-item" style="--ac:var(--place)" onclick="toggle(this)">
+          <div class="check">✓</div>
+          <div class="task-content">
+            <div class="task-name">Binary Search — beyond the basics (search in rotated array, search space)</div>
+            <div class="task-desc">Binary search is not just for sorted arrays. Search Space problems: Koko Eating Bananas, Minimum Days to Make Bouquets, Capacity to Ship Packages. Template: define lo, hi, mid, and what to shrink. Every binary search has the same skeleton — master the template.</div>
+            <div class="task-tags"><span class="tag tag-d">ONGOING</span></div>
+          </div>
+          <div class="task-right"><span class="effort">TEMPLATE</span></div>
+        </div>
+        <div class="task-item" style="--ac:var(--place)" onclick="toggle(this)">
+          <div class="check">✓</div>
+          <div class="task-content">
+            <div class="task-name">Backtracking — Subsets, Permutations, N-Queens, Word Search</div>
+            <div class="task-desc">Backtracking template: choose → explore → unchoose. Build a decision tree mentally before coding. Classic problems: Subsets (with/without duplicates), Permutations, Combinations, N-Queens, Word Search, Sudoku Solver. These come up more than you'd expect in interviews.</div>
+            <div class="task-tags"><span class="tag tag-d">ONGOING</span></div>
+          </div>
+          <div class="task-right"><span class="effort">PATTERN</span></div>
+        </div>
+        <div class="task-item" style="--ac:var(--place)" onclick="toggle(this)">
+          <div class="check">✓</div>
+          <div class="task-content">
+            <div class="task-name">Timed mock interviews — solve 3 problems in 45 min weekly</div>
+            <div class="task-desc">Use LeetCode's "Interview Assessment" mode or set a timer yourself. Pick 1 easy + 2 medium from random categories. Narrate your thinking aloud as you code. Review: where did you get stuck? What pattern did you miss? Simulate the pressure — don't just solve on your own schedule.</div>
+            <div class="task-tags"><span class="tag tag-y">WEEKLY</span><span class="tag tag-d">MOCK</span></div>
+          </div>
+          <div class="task-right"><span class="effort">PRACTICE</span></div>
+        </div>
+        <div class="task-item" style="--ac:var(--place)" onclick="toggle(this)">
+          <div class="check">✓</div>
+          <div class="task-content">
+            <div class="task-name">Maintain an error log — track every mistake pattern</div>
+            <div class="task-desc">Keep a Notion/Google Sheet: Problem | Pattern | What I got wrong | The correct approach. Review this log once a week. Most people repeat the same mistakes. The log forces you to learn from each failure. Your error log will predict 60% of your future mistakes before they happen.</div>
+            <div class="task-tags"><span class="tag tag-d">DAILY HABIT</span></div>
+          </div>
+          <div class="task-right"><span class="effort">TRACK</span></div>
+        </div>
+        <div class="task-item" style="--ac:var(--place)" onclick="toggle(this)">
+          <div class="check">✓</div>
+          <div class="task-content">
+            <div class="task-name">Blind 75 + NeetCode 150 — complete the essential problem sets</div>
+            <div class="task-desc">Blind 75 is the most battle-tested list of interview problems. NeetCode 150 extends it. Do these alongside your topic-based practice, not instead. Every problem on these lists has been reported in real interviews at FAANG/product companies. Use neetcode.io for video solutions.</div>
+            <div class="task-tags"><span class="tag tag-y">KEY RESOURCE</span><span class="tag tag-d">neetcode.io</span></div>
+          </div>
+          <div class="task-right"><span class="effort">CANONICAL</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 4.2 Core Fundamentals -->
+    <div class="cat-group">
+      <div class="cat-header open" onclick="toggleCat(this)">
+        <span class="cat-badge" style="background:rgba(253,224,71,0.1);color:var(--place);border:1px solid rgba(253,224,71,0.25)">THEORY</span>
+        <span class="cat-title">Core CS Fundamentals — 1 Topic/Day (OS, DBMS, Networks, OOP)</span>
+        <span class="cat-count" id="cc-core">0/8</span>
+        <span class="cat-toggle">▾</span>
+      </div>
+      <div class="task-list">
+        <div class="task-item" style="--ac:var(--place)" onclick="toggle(this)">
+          <div class="check">✓</div>
+          <div class="task-content">
+            <div class="task-name">OS — Processes, Threads, Scheduling, Deadlocks</div>
+            <div class="task-desc">
+              Must know: Process vs Thread (memory model), CPU scheduling (FCFS, SJF, Round Robin, Priority), Deadlock conditions (mutual exclusion, hold and wait, no preemption, circular wait), deadlock prevention/avoidance (Banker's algorithm).
+              Must-answer questions: "What happens when you type a URL?" "What is a context switch?" "Difference between process and thread?"
+            </div>
+            <div class="task-tags"><span class="tag tag-y">MON</span><span class="tag tag-d">1-2 hrs</span></div>
+          </div>
+          <div class="task-right"><span class="effort">OS</span></div>
+        </div>
+        <div class="task-item" style="--ac:var(--place)" onclick="toggle(this)">
+          <div class="check">✓</div>
+          <div class="task-content">
+            <div class="task-name">OS — Memory Management: Virtual Memory, Paging, Segmentation</div>
+            <div class="task-desc">Virtual memory lets processes use more memory than physically available. Paging: fixed-size frames, page tables, TLB. Segmentation: variable-size segments. Page replacement algorithms: FIFO, LRU, Optimal. Cache memory hierarchy: L1/L2/L3 — understand why cache hits matter for performance. These concepts appear in system design interviews too.</div>
+            <div class="task-tags"><span class="tag tag-y">TUE</span><span class="tag tag-d">1-2 hrs</span></div>
+          </div>
+          <div class="task-right"><span class="effort">OS</span></div>
+        </div>
+        <div class="task-item" style="--ac:var(--place)" onclick="toggle(this)">
+          <div class="check">✓</div>
+          <div class="task-content">
+            <div class="task-name">DBMS — SQL mastery: JOINs, Indexes, Transactions, ACID properties</div>
+            <div class="task-desc">
+              <strong style="color:var(--text)">SQL:</strong> INNER/LEFT/RIGHT/FULL JOIN, GROUP BY + HAVING, subqueries, window functions (ROW_NUMBER, RANK, LAG/LEAD). 
+              <strong style="color:var(--text)">Indexes:</strong> B-tree vs Hash, when to index, index costs.
+              <strong style="color:var(--text)">ACID:</strong> Atomicity, Consistency, Isolation, Durability — know each with an example.
+              Practice: LeetCode SQL problems (top 30 most common).
+            </div>
+            <div class="task-tags"><span class="tag tag-y">WED</span><span class="tag tag-d">1-2 hrs</span></div>
+          </div>
+          <div class="task-right"><span class="effort">DBMS</span></div>
+        </div>
+        <div class="task-item" style="--ac:var(--place)" onclick="toggle(this)">
+          <div class="check">✓</div>
+          <div class="task-content">
+            <div class="task-name">DBMS — Normalization, NoSQL, and database design</div>
+            <div class="task-desc">Normalization: 1NF, 2NF, 3NF, BCNF — with examples. When to denormalize for performance. NoSQL types: Document (MongoDB), Key-Value (Redis), Column (Cassandra), Graph (Neo4j) — when to choose each. CAP theorem: Consistency, Availability, Partition Tolerance — can only have 2. This is system design foundation.</div>
+            <div class="task-tags"><span class="tag tag-y">THU</span><span class="tag tag-d">1-2 hrs</span></div>
+          </div>
+          <div class="task-right"><span class="effort">DBMS</span></div>
+        </div>
+        <div class="task-item" style="--ac:var(--place)" onclick="toggle(this)">
+          <div class="check">✓</div>
+          <div class="task-content">
+            <div class="task-name">Computer Networks — OSI model, TCP/IP, HTTP/HTTPS, DNS</div>
+            <div class="task-desc">
+              OSI 7 layers + TCP/IP 4 layers — know what happens at each. 
+              TCP vs UDP: connection-oriented vs connectionless, when to use each.
+              HTTP methods: GET, POST, PUT, PATCH, DELETE — semantics and idempotency.
+              HTTPS: TLS handshake, certificates, symmetric vs asymmetric encryption.
+              DNS resolution: browser → OS cache → resolver → root nameserver → TLD → authoritative.
+            </div>
+            <div class="task-tags"><span class="tag tag-y">FRI</span><span class="tag tag-d">1-2 hrs</span></div>
+          </div>
+          <div class="task-right"><span class="effort">NETWORKS</span></div>
+        </div>
+        <div class="task-item" style="--ac:var(--place)" onclick="toggle(this)">
+          <div class="check">✓</div>
+          <div class="task-content">
+            <div class="task-name">OOP — SOLID principles, Design Patterns (Factory, Singleton, Observer)</div>
+            <div class="task-desc">
+              <strong style="color:var(--text)">SOLID:</strong> Single Responsibility, Open/Closed, Liskov Substitution, Interface Segregation, Dependency Inversion — know each with a code example.
+              <strong style="color:var(--text)">Must-know patterns:</strong> Singleton, Factory, Builder, Observer, Strategy, Decorator.
+              Implement each in your primary language. Interviewers will ask you to design a parking lot / vending machine / elevator — these patterns are the tools.
+            </div>
+            <div class="task-tags"><span class="tag tag-y">SAT MORNING</span><span class="tag tag-d">2 hrs</span></div>
+          </div>
+          <div class="task-right"><span class="effort">OOP</span></div>
+        </div>
+        <div class="task-item" style="--ac:var(--place)" onclick="toggle(this)">
+          <div class="check">✓</div>
+          <div class="task-content">
+            <div class="task-name">System Design basics — URL Shortener, Rate Limiter, Chat System</div>
+            <div class="task-desc">Framework for every SD question: Clarify requirements → Estimate scale → High-level design → Deep dive → Bottlenecks. Practice designing: URL shortener (hashing, DB choice, caching), Rate limiter (token bucket, sliding window), Notification system, Chat system. Read "System Design Interview" by Alex Xu — read 1 chapter per week.</div>
+            <div class="task-tags"><span class="tag tag-d">WEEKLY</span><span class="tag tag-d">Alex Xu book</span></div>
+          </div>
+          <div class="task-right"><span class="effort">SD</span></div>
+        </div>
+        <div class="task-item" style="--ac:var(--place)" onclick="toggle(this)">
+          <div class="check">✓</div>
+          <div class="task-content">
+            <div class="task-name">Make a 1-page cheatsheet for each CS topic — review before every interview</div>
+            <div class="task-desc">For each topic: the 10 most important concepts, the 3 most common interview questions, and a 2-line answer for each. Print it or keep it on your phone. Review all 4 sheets the night before any interview. This is your last-minute insurance.</div>
+            <div class="task-tags"><span class="tag tag-d">ONGOING</span><span class="tag tag-g">REVIEW TOOL</span></div>
+          </div>
+          <div class="task-right"><span class="effort">CONSOLIDATE</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 4.3 Resume -->
+    <div class="cat-group">
+      <div class="cat-header open" onclick="toggleCat(this)">
+        <span class="cat-badge" style="background:rgba(253,224,71,0.1);color:var(--place);border:1px solid rgba(253,224,71,0.25)">RESUME</span>
+        <span class="cat-title">Resume — Your Marketing Document (Complete This Week)</span>
+        <span class="cat-count" id="cc-res">0/6</span>
+        <span class="cat-toggle">▾</span>
+      </div>
+      <div class="task-list">
+        <div class="task-item" style="--ac:var(--place)" onclick="toggle(this)">
+          <div class="check">✓</div>
+          <div class="task-content">
+            <div class="task-name">Use a clean, ATS-friendly 1-page template (no tables, no images)</div>
+            <div class="task-desc">ATS (Applicant Tracking System) rejects resumes with tables, images, and headers in text boxes. Use a clean LaTeX template (Jake's Resume on Overleaf is the gold standard for CS). 1 page. Single column. 10-11pt font. Standard sections: Education, Experience, Projects, Skills.</div>
+            <div class="task-tags"><span class="tag tag-r">DO THIS WEEK</span><span class="tag tag-d">Overleaf</span></div>
+          </div>
+          <div class="task-right"><span class="effort">FORMAT</span></div>
+        </div>
+        <div class="task-item" style="--ac:var(--place)" onclick="toggle(this)">
+          <div class="check">✓</div>
+          <div class="task-content">
+            <div class="task-name">Write bullet points using "STAR + metric" format for every role/project</div>
+            <div class="task-desc">
+              Bad: "Built a recommender system."
+              Good: "Designed and deployed a collaborative filtering recommender system using Python and Flask, reducing user search time by 40% for a dataset of 100K+ items."
+              Every bullet: Action verb → What you built → Technology used → Measurable result. If no metric, estimate one — "Reduced by X%", "Used by N users", "Achieved X accuracy".
+            </div>
+            <div class="task-tags"><span class="tag tag-r">CRITICAL</span></div>
+          </div>
+          <div class="task-right"><span class="effort">CONTENT</span></div>
+        </div>
+        <div class="task-item" style="--ac:var(--place)" onclick="toggle(this)">
+          <div class="check">✓</div>
+          <div class="task-content">
+            <div class="task-name">Projects section — add your 3 best projects with GitHub links</div>
+            <div class="task-desc">Best 3 projects to include: AI Engine (Client project — shows real-world experience), Major Project (shows depth + teamwork), one Agents or DL project (shows AI skills). For each: 2 bullets max, tech stack listed, GitHub link that actually works with a clean README. Interviewers DO check your repos.</div>
+            <div class="task-tags"><span class="tag tag-r">THIS WEEK</span></div>
+          </div>
+          <div class="task-right"><span class="effort">PROJECTS</span></div>
+        </div>
+        <div class="task-item" style="--ac:var(--place)" onclick="toggle(this)">
+          <div class="check">✓</div>
+          <div class="task-content">
+            <div class="task-name">Skills section — be specific, not generic</div>
+            <div class="task-desc">
+              Don't write: "Programming Languages: Python, Java, JavaScript, C++"
+              Write: "Languages: Python (proficient), Java (intermediate), Go (familiar) | Frameworks: FastAPI, Spring Boot, LangChain, PyTorch | Tools: Docker, Git, PostgreSQL, Redis | ML: RAG systems, Fine-tuning (LoRA), LSTM, Transformers"
+              Specificity shows depth. Generic lists are ignored.
+            </div>
+            <div class="task-tags"><span class="tag tag-d">SKILLS</span></div>
+          </div>
+          <div class="task-right"><span class="effort">SPECIFICITY</span></div>
+        </div>
+        <div class="task-item" style="--ac:var(--place)" onclick="toggle(this)">
+          <div class="check">✓</div>
+          <div class="task-content">
+            <div class="task-name">Get resume reviewed by 2 seniors/alumni + run through ATS checker</div>
+            <div class="task-desc">Find 2 people who are already placed at good companies. Ask them specifically: "What would make you reject this in 30 seconds?" Run through resumeworded.com or topresume.com for ATS analysis. Target 80+ ATS score. Make all changes within 48 hours of getting feedback.</div>
+            <div class="task-tags"><span class="tag tag-r">BEFORE APPLYING</span></div>
+          </div>
+          <div class="task-right"><span class="effort">REVIEW</span></div>
+        </div>
+        <div class="task-item" style="--ac:var(--place)" onclick="toggle(this)">
+          <div class="check">✓</div>
+          <div class="task-content">
+            <div class="task-name">Tailor resume for each company type — product vs service vs startup</div>
+            <div class="task-desc">Keep 3 versions: Product company (FAANG-style — emphasize scale, algorithms, impact metrics), Service company (emphasize Java/Spring, multiple technologies, client delivery), Startup (emphasize AI skills, shipping fast, versatility). Tailoring takes 15 min per application and dramatically improves selection rates.</div>
+            <div class="task-tags"><span class="tag tag-d">PER APPLICATION</span></div>
+          </div>
+          <div class="task-right"><span class="effort">TAILOR</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 4.4 Codeforces -->
+    <div class="cat-group">
+      <div class="cat-header open" onclick="toggleCat(this)">
+        <span class="cat-badge" style="background:rgba(253,224,71,0.1);color:var(--place);border:1px solid rgba(253,224,71,0.25)">CP</span>
+        <span class="cat-title">Codeforces — Increase Rating (Weekend Focus)</span>
+        <span class="cat-count" id="cc-cf">0/5</span>
+        <span class="cat-toggle">▾</span>
+      </div>
+      <div class="task-list">
+        <div class="task-item" style="--ac:var(--place)" onclick="toggle(this)">
+          <div class="check">✓</div>
+          <div class="task-content">
+            <div class="task-name">Participate in 2 rated Div. 2 contests per week (Sat/Sun)</div>
+            <div class="task-desc">Div. 2 has 6 problems (A-F). Target: consistently solve A, B, and C within 90 minutes. A = observation, B = implementation, C = greedy/simple DP. Don't skip contests even if you feel unprepared — the pressure of real contests teaches you things practice never can. Track every contest in a log.</div>
+            <div class="task-tags"><span class="tag tag-y">SAT + SUN</span><span class="tag tag-d">2 HRS EACH</span></div>
+          </div>
+          <div class="task-right"><span class="effort">WEEKLY</span></div>
+        </div>
+        <div class="task-item" style="--ac:var(--place)" onclick="toggle(this)">
+          <div class="check">✓</div>
+          <div class="task-content">
+            <div class="task-name">Upsolve all problems you couldn't solve during the contest</div>
+            <div class="task-desc">Within 24 hours of every contest: go back to every problem you couldn't solve, read editorials, implement the solution yourself WITHOUT looking at code. Upsolving is where 80% of CP growth happens. Participants who upsolve consistently gain 200+ rating in 2 months.</div>
+            <div class="task-tags"><span class="tag tag-d">AFTER EACH CONTEST</span></div>
+          </div>
+          <div class="task-right"><span class="effort">UPSOLVE</span></div>
+        </div>
+        <div class="task-item" style="--ac:var(--place)" onclick="toggle(this)">
+          <div class="check">✓</div>
+          <div class="task-content">
+            <div class="task-name">Virtual contests — solve 5 old Div. 2 contests in virtual mode</div>
+            <div class="task-desc">Codeforces lets you simulate old contests in real-time mode. This is better than random practice because it trains contest-like behavior: time pressure, strategic problem selection, reading speed. Do 1 virtual contest on weekday evenings. Pick contests from 1-2 years ago at your target difficulty.</div>
+            <div class="task-tags"><span class="tag tag-d">WEEKDAY EVENING</span></div>
+          </div>
+          <div class="task-right"><span class="effort">PRACTICE</span></div>
+        </div>
+        <div class="task-item" style="--ac:var(--place)" onclick="toggle(this)">
+          <div class="check">✓</div>
+          <div class="task-content">
+            <div class="task-name">Focused topic practice — solve 10 problems from your weakest area</div>
+            <div class="task-desc">Go to Codeforces problem set, filter by your weak tag (e.g., "greedy", "dp", "graphs") and solve 10 problems at difficulty 100-200 above your current rating. The Codeforces rating on problems is reliable — it tells you if a problem is within reach. Track which tags you consistently fail.</div>
+            <div class="task-tags"><span class="tag tag-d">WEEKLY</span></div>
+          </div>
+          <div class="task-right"><span class="effort">TARGETED</span></div>
+        </div>
+        <div class="task-item" style="--ac:var(--place)" onclick="toggle(this)">
+          <div class="check">✓</div>
+          <div class="task-content">
+            <div class="task-name">Learn from top contestants — read editorial blogs, watch screencasts</div>
+            <div class="task-desc">Top CF users like tourist, Um_nik, Benq have public submissions. After solving a problem, compare your solution to a red coder's. You'll notice: cleaner code, smarter observations, shorter solutions. This cross-pollination of thinking accelerates improvement faster than grinding alone. Follow competitive programmers on Twitter/X.</div>
+            <div class="task-tags"><span class="tag tag-d">LEARNING</span></div>
+          </div>
+          <div class="task-right"><span class="effort">OBSERVE</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 4.5 Interview Prep -->
+    <div class="cat-group">
+      <div class="cat-header open" onclick="toggleCat(this)">
+        <span class="cat-badge" style="background:rgba(253,224,71,0.1);color:var(--place);border:1px solid rgba(253,224,71,0.25)">INTERVIEW</span>
+        <span class="cat-title">Interview Prep — Behavioral + Technical + Mock Sessions</span>
+        <span class="cat-count" id="cc-int">0/5</span>
+        <span class="cat-toggle">▾</span>
+      </div>
+      <div class="task-list">
+        <div class="task-item" style="--ac:var(--place)" onclick="toggle(this)">
+          <div class="check">✓</div>
+          <div class="task-content">
+            <div class="task-name">Prepare 10 STAR stories for behavioral questions</div>
+            <div class="task-desc">
+              Questions to prep: "Tell me about yourself", "Tell me about a challenge you overcame", "A time you disagreed with a teammate", "Your biggest failure", "Why this company?", "Where do you see yourself in 5 years?", "Tell me about a project you're most proud of".
+              STAR = Situation, Task, Action, Result. Keep each under 2 minutes. Your Major Project and client AI engines are rich sources of stories.
+            </div>
+            <div class="task-tags"><span class="tag tag-d">PREP ONCE</span><span class="tag tag-d">REVIEW WEEKLY</span></div>
+          </div>
+          <div class="task-right"><span class="effort">BEHAVIORAL</span></div>
+        </div>
+        <div class="task-item" style="--ac:var(--place)" onclick="toggle(this)">
+          <div class="check">✓</div>
+          <div class="task-content">
+            <div class="task-name">2 mock interviews per week with a friend (alternating interviewer/candidate)</div>
+            <div class="task-desc">Alternate roles: one week you interview, next they do. Interviewing others teaches you what good answers look like. Rules: no hints, real problem from a company's interview bank, 45 min limit, feedback after. Use Pramp or Interviewing.io for structured sessions with strangers — the nervousness of talking to an unknown interviewer is something you must practice.</div>
+            <div class="task-tags"><span class="tag tag-y">2X/WEEK</span></div>
+          </div>
+          <div class="task-right"><span class="effort">MOCK</span></div>
+        </div>
+        <div class="task-item" style="--ac:var(--place)" onclick="toggle(this)">
+          <div class="check">✓</div>
+          <div class="task-content">
+            <div class="task-name">Think out loud — narrate your problem-solving process during every practice session</div>
+            <div class="task-desc">The biggest reason candidates fail isn't wrong answers — it's silence. Interviewers need to see your thinking. Practice narrating: "My first instinct is X approach, but I see a problem with it... Let me think about a sliding window approach instead... The time complexity would be O(n)...". Record yourself on your phone occasionally and listen back.</div>
+            <div class="task-tags"><span class="tag tag-d">ALWAYS</span></div>
+          </div>
+          <div class="task-right"><span class="effort">HABIT</span></div>
+        </div>
+        <div class="task-item" style="--ac:var(--place)" onclick="toggle(this)">
+          <div class="check">✓</div>
+          <div class="task-content">
+            <div class="task-name">Research target companies — products, tech stack, recent news, culture</div>
+            <div class="task-desc">For each company you apply to: spend 30 min researching. Know: what they build, their tech stack, any recent launches/news, their engineering blog posts, reviews on Glassdoor. In the interview, reference what you've learned. "I read about your recent migration to microservices — I've been building similar systems..." This separates you from every other candidate.</div>
+            <div class="task-tags"><span class="tag tag-d">PER APPLICATION</span></div>
+          </div>
+          <div class="task-right"><span class="effort">RESEARCH</span></div>
+        </div>
+        <div class="task-item" style="--ac:var(--place)" onclick="toggle(this)">
+          <div class="check">✓</div>
+          <div class="task-content">
+            <div class="task-name">Network actively — LinkedIn DMs to alumni at target companies</div>
+            <div class="task-desc">Message format: "Hi [name], I'm [your name], a final-year CS student at [college]. I'm really interested in [Company] because [specific reason]. I'd love to learn about your experience there. Would you have 20 minutes for a quick call?" Success rate: ~30%. Get 3 referrals and one of them will likely lead to an offer. Referrals 3-5x your interview conversion rate.</div>
+            <div class="task-tags"><span class="tag tag-y">WEEKLY</span><span class="tag tag-d">5 DMs/week</span></div>
+          </div>
+          <div class="task-right"><span class="effort">NETWORK</span></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- DAILY NOTES -->
+<div class="notes-area">
+  <div class="notes-header">Today's Notes & Brain Dump</div>
+  <textarea class="notes-input" id="notesArea" placeholder="Brain dump here before your focus session — every distraction thought, every worry, every idea. Empty your RAM so your brain can focus completely.
+&#10;What's on my mind today:
+&#10;Today's top 3 must-complete:
+&#10;  1.
+  2.
+  3.
+&#10;Blocking me right now:
+&#10;What I'll do differently tomorrow:"></textarea>
+</div>
+
+<div style="text-align:center; padding:20px 0; font-family:'Space Mono',monospace; font-size:0.6rem; color:var(--text3); letter-spacing:0.1em;">
+  ENGINEER OS · BUILT FOR YOUR FINAL SEMESTER · <span style="color:var(--ai)">YOU HAVE EVERYTHING YOU NEED. START.</span>
+</div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── CLOCK ──
+function updateClock() {
+  const n = new Date();
+  document.getElementById('clock').textContent = n.toLocaleTimeString('en-US',{hour12:false});
+  document.getElementById('dateD').textContent = n.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric',year:'numeric'}).toUpperCase();
+}
+updateClock(); setInterval(updateClock, 1000);
+
+// ── SOB COUNTDOWN ──
+function updateSOB() {
+  const d = new Date('2026-03-15T23:59:59') - new Date();
+  if(d<=0){document.getElementById('sobChip').textContent='DEADLINE PASSED'; return;}
+  const days=Math.floor(d/86400000), hrs=Math.floor((d%86400000)/3600000);
+  document.getElementById('sobChip').textContent=`${days}D ${hrs}H LEFT`;
+}
+updateSOB(); setInterval(updateSOB,60000);
+
+// ── TOAST ──
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 2000);
+}
+
+// ── TASK TOGGLE ──
+function toggle(el) {
+  if(el.classList.contains('subtask')) return; // handled separately
+  el.classList.toggle('done');
+  const ch = el.querySelector('.check');
+  ch.textContent = el.classList.contains('done') ? '✓' : '';
+  updateProgress();
+  if(el.classList.contains('done')) showToast('Task complete ✓');
+}
+
+function updateProgress() {
+  const areas = ['college','ai','extra','place'];
+  areas.forEach(area => {
+    const sec = document.getElementById('sec-'+area);
+    if(!sec) return;
+    const all = sec.querySelectorAll('.task-item:not(.subtask)');
+    const done = sec.querySelectorAll('.task-item:not(.subtask).done');
+    const pct = all.length>0?Math.round(done.length/all.length*100):0;
+    const el = id => document.getElementById(id);
+    if(el('pct-'+area)) el('pct-'+area).textContent = pct+'%';
+    if(el('bar-'+area)) el('bar-'+area).style.width = pct+'%';
+    if(el('cnt-'+area)) el('cnt-'+area).textContent = done.length+' / '+all.length+' tasks done';
+  });
+}
+setTimeout(updateProgress, 100);
+
+// ── SECTION TOGGLE ──
+function toggleSection(area) {
+  const body = document.getElementById('body-'+area);
+  const header = body.previousElementSibling;
+  body.classList.toggle('collapsed');
+  header.classList.toggle('collapsed');
+}
+
+// ── CAT GROUP TOGGLE ──
+function toggleCat(header) {
+  const list = header.nextElementSibling;
+  header.classList.toggle('open');
+  list.style.display = header.classList.contains('open') ? 'block' : 'none';
+}
+
+// ── MILESTONE TOGGLE ──
+let msState = ['done','active','upcoming','upcoming','upcoming','upcoming','upcoming','upcoming'];
+function toggleMS(el) {
+  const states = ['upcoming','active','done'];
+  const cur = el.classList.contains('done')?2 : el.classList.contains('active')?1 : 0;
+  const next = (cur+1)%3;
+  el.classList.remove('done','active','upcoming');
+  el.classList.add(states[next]);
+  el.textContent = states[next]==='done'?'✓' : states[next]==='active'?'→' : el.dataset.num||el.textContent;
+  showToast('Milestone updated!');
+}
+
+// ── AREA FILTER ──
+function filterArea(area) {
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelector(`.tab[data-tab="${area}"]`).classList.add('active');
+  document.querySelectorAll('.area-section').forEach(sec=>{
+    if(area==='all'||sec.dataset.area===area) {
+      sec.classList.remove('hidden');
+    } else {
+      sec.classList.add('hidden');
+    }
+  });
+}
+
+// ── POMODORO ──
+let pomSec=25*60, pomRunning=false, pomBreak=false, pomInterval=null;
+let pomCompleted=0, todaySessions=0, totalMins=0;
+
+function pomFmt(s){return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0');}
+
+function pomStart(){
+  if(pomRunning)return;
+  pomRunning=true;
+  document.getElementById('pomTime').classList.remove('brk','pau');
+  document.getElementById('pomPhase').textContent = pomBreak?'BREAK TIME':'DEEP WORK';
+  pomInterval=setInterval(()=>{
+    pomSec--;
+    document.getElementById('pomTime').textContent=pomFmt(pomSec);
+    if(pomSec<=0){
+      clearInterval(pomInterval); pomRunning=false;
+      if(!pomBreak){
+        pomCompleted++; todaySessions++; totalMins+=25;
+        document.getElementById('todaySessions').textContent=todaySessions;
+        const h=Math.floor(totalMins/60), m=totalMins%60;
+        document.getElementById('totalFocus').textContent=h+'h '+m+'m';
+        updatePomDots();
+        pomBreak=true; pomSec=(pomCompleted%4===0?30:5)*60;
+        document.getElementById('pomTime').classList.add('brk');
+        document.getElementById('pomPhase').textContent=pomCompleted%4===0?'LONG BREAK — YOU EARNED IT!':'SHORT BREAK';
+        showToast('Focus session done! Take a break 🎉');
+      } else {
+        pomBreak=false; pomSec=25*60;
+        document.getElementById('pomTime').classList.remove('brk');
+        document.getElementById('pomPhase').textContent='DEEP WORK';
+        showToast('Break done — back to work!');
+      }
+      document.getElementById('pomTime').textContent=pomFmt(pomSec);
+      pomStart();
+    }
+  },1000);
+}
+
+function pomPause(){
+  if(!pomRunning)return;
+  clearInterval(pomInterval); pomRunning=false;
+  document.getElementById('pomTime').classList.add('pau');
+  document.getElementById('pomPhase').textContent='PAUSED';
+}
+
+function pomReset(){
+  clearInterval(pomInterval); pomRunning=false; pomBreak=false; pomSec=25*60;
+  document.getElementById('pomTime').textContent='25:00';
+  document.getElementById('pomTime').className='pom-time';
+  document.getElementById('pomPhase').textContent='READY TO FOCUS';
+}
+
+function updatePomDots(){
+  for(let i=0;i<4;i++){
+    document.getElementById('pd'+i).classList.toggle('f', i<(pomCompleted%4)||(pomCompleted>0&&pomCompleted%4===0));
+  }
+}
+
+// ── TRACKERS ──
+let trackers = {lc:{n:0,max:42}, sob:{n:0,max:5}, dw:{n:0,max:8}, cf:{n:800,max:2400}};
+
+function tc(key, delta) {
+  const t = trackers[key];
+  t.n = Math.max(0, key==='cf'?Math.min(t.n+delta,4000):Math.min(t.n+delta,t.max));
+  const n=document.getElementById(key+'-n');
+  const b=document.getElementById(key+'-b');
+  n.textContent = key==='cf'?Math.round(t.n):t.n%1===0?t.n:t.n.toFixed(1);
+  if(b && key!=='cf') b.style.width=Math.round(t.n/t.max*100)+'%';
+  if(b && key==='cf') b.style.width=Math.round((t.n-800)/3200*100)+'%';
+  showToast(key.toUpperCase()+' updated!');
+}
+
+// Auto-expand all lists on load
+window.addEventListener('load', ()=>{
+  document.querySelectorAll('.cat-header.open').forEach(h=>{
+    const list = h.nextElementSibling;
+    if(list && list.classList.contains('task-list')) list.style.display='block';
+  });
+  updateProgress();
+});
+</script>
+</body>
+</html>
